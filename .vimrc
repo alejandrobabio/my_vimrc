@@ -55,7 +55,7 @@ Plug 'honza/vim-snippets'
 " ruby / rails
 " Plug 'tpope/vim-rails'
 Plug 'tpope/vim-rails', { 'for': 'ruby' }
-Plug 'thoughtbot/vim-rspec', { 'for': 'ruby', 'on': ['RunCurrentSpecFile', 'RunNearestSpec', 'RunLastSpec'] }
+" Plug 'thoughtbot/vim-rspec', { 'for': 'ruby', 'on': ['RunCurrentSpecFile', 'RunNearestSpec', 'RunLastSpec'] }
 " Plug 'thoughtbot/vim-rspec'
 Plug 'tpope/vim-bundler', { 'for': 'ruby' }
 Plug 'slim-template/vim-slim', { 'for': 'slim' }
@@ -131,11 +131,13 @@ set expandtab                  " expand tabs to spaces
 set shiftwidth=2               " Use indents of 4 spaces
 set tabstop=2                  " An indentation every four columns
 set softtabstop=2              " Let backspace delete indent
-set wrap linebreak nolist      " wrap on word boundaries
+"set wrap linebreak nolist      " wrap on word boundaries
+set nowrap
+set colorcolumn=72,80,120
 
-if has('breakindent')
-  set breakindent              " indent wrapped lines to the same level as the first line
-endif
+"if has('breakindent')
+"  set breakindent              " indent wrapped lines to the same level as the first line
+"endif
 
 set showcmd                    " show command in bottom bar
 set cursorline                 " highlight current line
@@ -185,10 +187,25 @@ nnoremap <space> za
 " highlight last inserted text
 nnoremap gV `[v`]
 
+" I have a ,v mapping to reselect the text that was just pasted so I can
+" perform commands (like indentation) on it:
+nnoremap <leader>v V`]
 
 " break line on comma
-nmap <leader>, 0f,li
+" nmap <leader>, 0f,li
 
+" copy to clipboard
+"map <leader>cy "*y
+" paste from clipboard
+map <leader>cp "*p
+map <leader>cP "*P
+
+nmap <tab> %
+vmap <tab> %
+
+" Map ee to open file in same directory as the current file
+cnoremap %% <C-R>=expand('%:h').'/'<cr>
+map <leader>ee :edit %%
 
 " toggle gundo
 nnoremap <leader>u :GundoToggle<cr>
@@ -206,15 +223,15 @@ xnoremap p pgvy:
 " comment lines with <cmd+/> (vis Sublime)
 " map <D-/> :TComment<cr>
 " vmap <D-/> :TComment<cr>gv
-map <D-/> gcc
-vmap <D-/> gcc
+"map <D-/> gcc
+"vmap <D-/> gcc
 
 
 " indent lines with <cmd+[> and <cmd+]> (vis Sublime)
-nmap <D-]> >>
-nmap <D-[> <<
-vmap <D-[> <gv
-vmap <D-]> >gv
+"nmap <D-]> >>
+"nmap <D-[> <<
+"vmap <D-[> <gv
+"vmap <D-]> >gv
 
 
 " indent entire file with <leader>i
@@ -228,12 +245,11 @@ map <D-v> :set paste<cr>o<esc>"*]p:set nopaste<cr>
 
 " NERDTree setting
 nnoremap <leader>n :NERDTreeToggle<cr>
-
-let g:NERDTreeWinSize = 50
+let g:NERDTreeShowHidden=1
 
 
 " jump to tag with <option-cmd-down>
-nmap <M-D-Down> ^]
+"nmap <M-D-Down> ^]
 
 
 " jump to css class or id (usually) with <leader>]
@@ -241,59 +257,8 @@ nnoremap <leader>] :tag /<c-r>=expand('<cword>')<cr><cr>
 
 
 " select all in gui with cmd+a
-nnoremap <D-a> ggVG
+"nnoremap <D-a> ggVG
 
-
-" macvim-specific settings
-if has('gui_macvim') && has('gui_running')
-  echom "vimrc: loading gui settings"
-
-  " set powerline/airline patched font
-  let s:uname = system("uname")
-  if s:uname == "Darwin\n"
-      set guifont=Inconsolata\ for\ Powerline:h13
-  else
-      echom "no darwin!"
-  endif
-
-  " Disable print shortcut for 'goto anything...'
-  macmenu File.Print key=<nop>
-
-  " Disable new tab shortcut for 'goto file...'
-  macmenu File.New\ Tab key=<nop>
-
-  " Move  with cmd+alt
-  " macm Window.Select\ Previous\ Tab  key=<D-M-LEFT>
-  " macm Window.Select\ Next\ Tab	   key=<D-M-RIGHT>
-
-  " Open new window via cmd+shift+n
-  macmenu File.New\ Window key=<D-N>
-
-  " create a new menu item with title "New File" and bind it to cmd+n
-  " new files will be created on a new tab
-  an 10.190 File.New\ File <nop>
-  macmenu File.New\ File action=addNewTab: key=<D-n>
-
-  " No toolbars, menu or scrollbars in the GUI
-  " set clipboard+=unnamed
-  set vb t_vb=
-  set guioptions-=m  "no menu
-  set guioptions-=T  "no toolbar
-  set guioptions-=l
-  set guioptions-=L
-  set guioptions-=r  "no scrollbar
-  set guioptions-=R
-
-  " switch tabs with <opt-cmd-h>, <opt-cmd-l>
-  " noremap <C-D-l> :tabnext<cr>
-  " noremap <C-D-h> :tabprev<cr>
-endif
-
-" Relative line numbers
-if exists('&relativenumber')
-	autocmd InsertEnter * :set number
-	autocmd InsertLeave * :set relativenumber
-endif
 
 " wrapped lines fixes
 noremap $ g$
@@ -303,7 +268,6 @@ nnoremap k gk
 
 
 " keep current visual block selection active after changing indent
-"
 vnoremap < <gv
 vnoremap > >gv
 
@@ -317,29 +281,21 @@ nnoremap Y y$
 
 
 " rspec
-if has('gui_macvim') && has('gui_running')
-  let g:rspec_command = 'time bundle exec rspec {spec}'
-else
-  let g:rspec_command = '!time bundle exec rspec {spec}'
-endif
-noremap <leader>t :call RunCurrentSpecFile()<cr>
-noremap <leader>s :call RunNearestSpec()<cr>
-noremap <leader>l :call RunLastSpec()<cr>
-
-" save with <cmd-s>
-map <D-s> <esc>:w
+"let g:rspec_command = '!time bundle exec rspec {spec}'
+"noremap <leader>t :call RunCurrentSpecFile()<cr>
+"noremap <leader>s :call RunNearestSpec()<cr>
+"noremap <leader>l :call RunLastSpec()<cr>
 
 
-" remove search highlighting with <,/>
-nmap <silent> <leader>/ :nohlsearch<cr>
-nmap <silent> <leader>h :nohlsearch<cr>
+" clear out a search
+nnoremap <leader><space> :nohlsearch<cr>
 
 " Use Q for formatting the current paragraph (or selection)
 vmap Q gq
 nmap Q gqap
 
 " Efficient save commands
-nnoremap ; :
+"nnoremap ; :
 
 " map jj to esc
 inoremap jj <esc>
@@ -380,23 +336,44 @@ map :src<cr> :so ~/.vimrc<cr>
 nmap sss :src
 
 " splits
-map <C-J> <C-W>j<C-W>_
-map <C-K> <C-W>k<C-W>_
-map <C-L> <C-W>l<C-W>_
-map <C-H> <C-W>h<C-W>_
+"map <C-J> <C-W>j<C-W>_
+"map <C-K> <C-W>k<C-W>_
+"map <C-L> <C-W>l<C-W>_
+"map <C-H> <C-W>h<C-W>_
+" from: https://github.com/vijaydev/dotfiles/blob/master/vimrc
+nnoremap ss <C-w>s
+nnoremap vv <C-w>v
+" This next set of mappings maps <C-[h/j/k/l]> to the commands needed to move
+" around your splits.
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+nnoremap <leader>++ 10<C-w>+
+nnoremap <leader>-- 10<C-w>-
 
 " easier split resizing
 " use with relative [width +3] or absolute [width 30]
 ca width vertical resize
 ca height resize
 
+" relpalce last find with confirmation
+nnoremap <leader>s :%s///cg<left><left><left>
+
+let g:browser = 'google-chrome -new-tab '
+
+" replace ':bar =>' with 'bar:'
+nnoremap <leader>rh :%s/:\([^=,'"]*\) =>/\1:/gc
+" replace 'bar:' with ':bar =>'
+nnoremap <leader>hr :%s/\(\w*\): \([':]\)/:\1 => \2/gc
+
 " readjust split sizes based on current active split
 " rct does not understand this
 " see https://upcase.com/videos/splits-with-patrick-brisbin
-set winwidth=84
-set winheight=5
-set winminheight=5
-set winheight=9999
+"set winwidth=84
+"set winheight=5
+"set winminheight=5
+"set winheight=9999
 
 " switch tabs with <ctrl-h>, <ctrl-l>
 "noremap <c-h> :tabprev<cr>
@@ -574,4 +551,209 @@ autocmd BufReadPost *
   \   exe "normal g`\"" |
   \ endif
 
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" RENAME CURRENT FILE
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! RenameFile()
+    let old_name = expand('%')
+    let new_name = input('New file name: ', expand('%'), 'file')
+    if new_name != '' && new_name != old_name
+        exec ':saveas ' . new_name
+        exec ':silent !rm ' . old_name
+        redraw!
+    endif
+endfunction
+map <leader>f :call RenameFile()<cr>
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" PROMOTE VARIABLE TO RSPEC LET
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! PromoteToLet()
+  :normal! dd
+  " :exec '?^\s*it\>'
+  :normal! P
+  :.s/\(\w\+\) = \(.*\)$/let(:\1) { \2 }/
+  :normal ==
+endfunction
+:command! PromoteToLet :call PromoteToLet()
+map <leader>l :PromoteToLet<cr>
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" EXTRACT VARIABLE (SKETCHY)
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! ExtractVariable()
+    let name = input("Variable name: ")
+    if name == ''
+        return
+    endif
+    " Enter visual mode (not sure why this is needed since we're already in
+    " visual mode anyway)
+    normal! gv
+
+    " Replace selected text with the variable name
+    exec "normal c" . name
+    " Define the variable on the line above
+    exec "normal! O" . name . " = "
+    " Paste the original selected text to be the variable value
+    normal! $p
+endfunction
+vnoremap <leader>rv :call ExtractVariable()<cr>
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" INLINE VARIABLE (SKETCHY)
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! InlineVariable()
+    " Copy the variable under the cursor into the 'a' register
+    :let l:tmp_a = @a
+    :normal "ayiw
+    " Delete variable and equals sign
+    :normal 2daW
+    " Delete the expression into the 'b' register
+    :let l:tmp_b = @b
+    :normal "bd$
+    " Delete the remnants of the line
+    :normal dd
+    " Go to the end of the previous line so we can start our search for the
+    " usage of the variable to replace. Doing '0' instead of 'k$' doesn't
+    " work; I'm not sure why.
+    normal k$
+    " Find the next occurence of the variable
+    exec '/\<' . @a . '\>'
+    " Replace that occurence with the text we yanked
+    exec ':.s/\<' . @a . '\>/' . @b
+    :let @a = l:tmp_a
+    :let @b = l:tmp_b
+endfunction
+nnoremap <leader>ri :call InlineVariable()<cr>
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" SWITCH BETWEEN TEST AND PRODUCTION CODE
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! OpenTestAlternate()
+  let new_file = AlternateForCurrentFile()
+  exec ':e ' . new_file
+endfunction
+
+function! OpenInTabTestAlternate()
+  let new_file = AlternateForCurrentFile()
+  exec ':vs'
+  if match(expand("%"), '^spec/') != -1
+    exec "normal \<C-w>l"
+  endif
+  exec ':e ' . new_file
+endfunction
+
+function! AlternateForCurrentFile()
+  let current_file = expand("%")
+  let new_file = current_file
+  let in_spec = match(current_file, '^spec/') != -1
+  let going_to_spec = !in_spec
+  let in_app = match(current_file, '\<controllers\>') != -1 || match(current_file, '\<models\>') != -1 || match(current_file, '\<views\>') != -1 || match(current_file, '\<helpers\>') != -1 || match(current_file, '\<services\>') != -1 || match(current_file, '\<jobs\>') != -1
+  let in_app_assets = match(current_file, '\<javascripts\>') != -1
+  if going_to_spec
+    if in_app
+      let new_file = substitute(new_file, '^app/', '', '')
+    end
+    if in_app_assets
+      let new_file = substitute(new_file, '^app/assets/', '', '')
+      let new_file = substitute(new_file, '\.e\?coffee$', '_spec.coffee', '')
+    end
+    let new_file = substitute(new_file, '\.e\?rb$', '_spec.rb', '')
+    let new_file = 'spec/' . new_file
+  else
+    let new_file = substitute(new_file, '_spec\.rb$', '.rb', '')
+    let new_file = substitute(new_file, '^spec/', '', '')
+    if in_app_assets
+      let new_file = 'app/assets/' . new_file
+      let new_file = substitute(new_file, '_spec\.coffee$', '.coffee', '')
+    end
+    if in_app
+      let new_file = 'app/' . new_file
+    end
+  endif
+  return new_file
+endfunction
+
+nnoremap <leader>. :call OpenTestAlternate()<cr>
+nnoremap <leader>. :call OpenInTabTestAlternate()<cr>
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" RUNNING TESTS
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"function! MapCR()
+  "nnoremap <cr> :call RunTestFile()<cr>
+"endfunction
+"call MapCR()
+"nnoremap <leader>U :call RunTestFile()<cr>
+nnoremap <leader>, :call RunNearestTest()<cr>
+"nnoremap <leader>a :call RunTests('')<cr>
+"nnoremap <leader>m :call TestModified()<cr>
+"nnoremap <leader>c :w\|:!script/features<cr>
+"nnoremap <leader>w :w\|:!script/features --profile wip<cr>
+
+function! RunNearestTest()
+    let spec_line_number = line('.')
+    call RunTestFile(":" . spec_line_number)
+endfunction
+
+function! RunTestFile(...)
+    if a:0 && match(expand("%"), '\.coffee$') == -1 && match(expand("%"), '_test\.rb') == -1
+        let command_suffix = a:1
+    else
+        let command_suffix = ""
+    endif
+
+    " Run the tests for the previously-marked file.
+    let in_test_file = match(expand("%"), '\(.coffee\|.feature\|_test.rb\|_spec.rb\)$') != -1
+    if in_test_file
+        call SetTestFile()
+    elseif !exists("t:grb_test_file")
+        return
+    end
+    call RunTests(t:grb_test_file . command_suffix)
+endfunction
+
+function! SetTestFile()
+    " Set the spec file that tests will be run for.
+    let t:grb_test_file=@%
+endfunction
+
+function! RunTests(filename)
+    " Write the file and run tests for the given filename
+    if expand("%") != ""
+      :w
+    end
+    :silent !clear
+    if match(a:filename, '\.coffee') != -1
+        exec ":silent !echo 'time spring teaspoon '" . a:filename
+        exec ":!time spring teaspoon " . a:filename
+    elseif match(a:filename, '\.feature') != -1
+        exec ":silent !echo 'time spring cucumber '" .  a:filename
+        exec ":!time spring cucumber " . a:filename
+    elseif match(a:filename, '_test\.rb') != -1
+        exec ":silent !echo 'time TESTOPTS=-p time spring rake test '" .  a:filename
+        exec ":!time TESTOPTS=-p spring rake test " . a:filename
+    else
+        exec ":silent !echo 'time spring rspec --color '" .  a:filename
+        exec ":!time spring rspec --color " . a:filename
+    end
+endfunction
+
+" run tests on modified
+function! TestModified()
+  let args = system('git status -s spec | grep "^ \?\(M\|A\|UU\)" | sed "s/^.\{3\}//"')
+  let args_ary = split(args, '\n')
+  let s = ''
+  for arg in args_ary
+    if arg =~ "spec_helper.rb" || arg =~ "support"
+      echo arg . ' modified, run all tests'
+      return
+    endif
+    if arg !~ "spec_helper.rb" && arg !~ "fabricators" && arg !~ "support"
+      let s = s . ' ' . arg
+    endif
+  endfor
+  call RunTests(s)
+endfunction
 
