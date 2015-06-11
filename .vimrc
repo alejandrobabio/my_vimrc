@@ -1,10 +1,4 @@
-" .vimrc
-" hardlinked as ~/.vimrc, ~/.vim/.vimrc
-
 set nocompatible
-filetype off
-syntax on
-filetype plugin indent on
 
 " install plugins
 call plug#begin('~/.vim/plugged')
@@ -13,8 +7,7 @@ let g:plug_timeout=500
 " gui elements
 Plug 'scrooloose/nerdtree', { 'on':  ['NERDTree', 'NERDTreeToggle'] }
 Plug 'majutsushi/tagbar'
-"Plug 'bling/vim-airline'
-Plug 'Lokaltog/vim-powerline'
+Plug 'bling/vim-airline'
 
 " formatting and navigation
 Plug 'tpope/vim-surround'
@@ -46,7 +39,7 @@ Plug 'rking/ag.vim'
 Plug 'skwp/greplace.vim', { 'on': ['Gsearch', 'Greplace'] }
 
 " supertab
-Plug 'ervandew/supertab'
+"Plug 'ervandew/supertab'
 
 " snippets
 Plug 'SirVer/ultisnips'
@@ -55,6 +48,7 @@ Plug 'honza/vim-snippets'
 " ruby / rails
 " Plug 'tpope/vim-rails'
 Plug 'tpope/vim-rails', { 'for': 'ruby' }
+Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
 " Plug 'thoughtbot/vim-rspec', { 'for': 'ruby', 'on': ['RunCurrentSpecFile', 'RunNearestSpec', 'RunLastSpec'] }
 " Plug 'thoughtbot/vim-rspec'
 Plug 'tpope/vim-bundler', { 'for': 'ruby' }
@@ -75,25 +69,176 @@ Plug 'flazz/vim-colorschemes'
 
 call plug#end()
 
-" colorscheme
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" options. run  `:options` for help
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 1 important
+set nocompatible
+" Toggle paste mode while in insert mode with F10
+set pastetoggle=<F10>
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 2 moving around, searching and patterns
+" to highlight search results
+set incsearch
+" together make Vim deal with case-sensitive search intelligently
+set ignorecase
+set smartcase
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 3 tags
+" TagList
+"set tags=tags,gems.tags;
+" uso de ctags con gems
+"set tags+=gems.tags
+set tags=.git/tags    			   " redundant with fugitive
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 4 displaying text
+"set scrolloff=1
+set nowrap
+set list
+set listchars=tab:·\ ,trail:·,precedes:«,extends:»
+set number
+set lazyredraw                 " no redraw on macros execution
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 5 syntax, highlighting and spelling
+set hlsearch
+" cursor en doble línea
+set cursorline
+" mark 72, 80 and 120 characters
+set colorcolumn=72,80,120
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 6 multiple windows
+"" vim-powerline https://github.com/Lokaltog/vim-powerline
+set laststatus=2 " Always display the statusline in all windows
+set splitright                 " Split vertical windows right to the current windows
+set splitbelow                 " Split horizontal windows below to the current windows
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 7 multiple tab pages
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 8 terminal
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 9 using the mouse
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"10 printing
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"11 messages and info
+set shortmess+=A
+set showcmd
+set ruler
+" vim-Powerline  Hide the default mode text (-- INSERT -- below the statusline)
+set noshowmode
+set visualbell                 " no beeps, only visual
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"12 selecting text
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"13 editing text
+set formatoptions=tcqr
+set complete=.,w,b,u,t,i
+" Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert mode.
+set backspace=indent,eol,start
+" show matching brackets
+set showmatch
+set nrformats-=octal
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"14 tabs and indenting
+set tabstop=2
+set shiftwidth=2
+set softtabstop=2
+set expandtab
+set autoindent
+" use smartindent or cindent (cinoptions only for cindent)
+"set smartindent
+"set cindent
+"set cinoptions=:0,p0,t0
+"set cinwords=if,else,while,do,for,switch,case
+set nosmartindent
+set indentexpr=GetRubyIndent()
+set shiftround
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"15 folding
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"16 diff mode
+set diffopt=vertical
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"17 mapping
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"18 reading and writing files
+set autowrite                  " Automatically save before :next, :make etc.
+set autoread                   " Automatically reread changed files without asking me anything
+set fileformats=unix,dos,mac   " Prefer Unix over Windows over OS 9 formats
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"19 the swap file
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"20 command line editing
+set wildmode=list:longest,full
+set undofile
+if &undodir =~# '^\.\%(,\|$\)'
+  let &undodir = "/home/alejandro/bk/vim/undodir," . &undodir
+endif
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"21 executing external commands
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"22 running make and jumping to errors
+set grepprg=ag
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"23 language specific
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"24 multi-byte characters
+set encoding=utf-8
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"25 various
+" applies substitutions globally on lines. Without type /g
+set gdefault
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" else
+"colorscheme darkZ
+"colorscheme wombat256
 colorscheme molokai
+filetype plugin indent on
+syntax on
+let mapleader = ","
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" mappings
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " utilisnips
 " taken from: http://stackoverflow.com/a/22253548/4151953
 " make YCM compatible with UltiSnips (using supertab)
-let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
-let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
-let g:SuperTabDefaultCompletionType = '<C-n>'
+"let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
+"let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
+let g:ycm_key_list_select_completion=[]
+let g:ycm_key_list_previous_completion=[]
+"let g:SuperTabDefaultCompletionType = '<C-n>'
+"let g:ycm_filetype_specific_completion_to_disable = {
+"             \ 'ruby': 1
+"             \}
 
 " better key bindings for UltiSnipsExpandTrigger
 let g:UltiSnipsExpandTrigger = "<tab>"
 let g:UltiSnipsJumpForwardTrigger = "<tab>"
 let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
+"let g:UltiSnipsExpandTrigger="<c-tab>"
+let g:UltiSnipsListSnippets="<c-tab>"
+"let g:SuperTabCrMapping = 0
+let g:UltiSnipsUsePythonVersion=2
 
 " vmap <Leader>blame :<C-U>!git blame <C-R>=expand("%:p") <CR> \| sed -n <C-R>=line("'<") <CR>,<C-R>=line("'>") <CR>p <CR>
 
-let mapleader = ','            " leader
+"autocmd FileType ruby,eruby set omnifunc=rubycomplete#Complete
+"autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1
+"autocmd FileType ruby,eruby let g:rubycomplete_rails = 1
+"autocmd FileType ruby,eruby let g:rubycomplete_classes_in_global = 1
+"autocmd Filetype ruby,eruby let g:rubycomplete_use_bundler = 1
+
+
+" vim-ruby
+let g:ruby_indent_access_modifier_style = 'outdent'
+
 
 map <leader>dir :e<c-r>=expand('%:p:h') . '/'<cr>
 " map <leader>s :split<c-r>=expand('%:p:h') . '/'<cr>
@@ -102,54 +247,24 @@ map <leader>dir :e<c-r>=expand('%:p:h') . '/'<cr>
 " basics
 runtime macros/matchit.vim	   " jump between keywords with %
 
-set visualbell                 " no beeps
-set number                     " Show line numbers
-set backspace=indent,eol,start " Makes backspace key more powerful.
-set showcmd                    " Show me what I'm typing
-set noshowmode                 " No Show current mode.
+syntax on
+filetype plugin indent on
 
-set noswapfile                 " Don't use swapfile
-set nobackup                   " Don't create annoying backup files
-set splitright                 " Split vertical windows right to the current windows
-set splitbelow                 " Split horizontal windows below to the current windows
-set encoding=utf-8             " Set default encoding to UTF-8
-set autowrite                  " Automatically save before :next, :make etc.
-set autoread                   " Automatically reread changed files without asking me anything
-set fileformats=unix,dos,mac   " Prefer Unix over Windows over OS 9 formats
 
-set showmatch                  " Do not show matching brackets by flickering
-set incsearch                  " Shows the match while typing
-set hlsearch                   " Highlight found searches
-set ignorecase                 " Search case insensitive...
-set smartcase                  " ... but not when search pattern contains upper case characters
 
-set viminfo+=n~/.vim/.viminfo
+"set viminfo+=n~/.vim/.viminfo
 
-set modelines=3                " number of lines checked for modelines
+"set modelines=3                " number of lines checked for modelines
 
-set expandtab                  " expand tabs to spaces
-set shiftwidth=2               " Use indents of 4 spaces
-set tabstop=2                  " An indentation every four columns
-set softtabstop=2              " Let backspace delete indent
 "set wrap linebreak nolist      " wrap on word boundaries
-set nowrap
-set colorcolumn=72,80,120
 
 "if has('breakindent')
 "  set breakindent              " indent wrapped lines to the same level as the first line
 "endif
 
-set showcmd                    " show command in bottom bar
-set cursorline                 " highlight current line
 "set wildmenu                   " visual autocomplete for command menu
-set wildmode=list:longest,full
-set lazyredraw                 " redraw only when we need to.
-set laststatus=2               " always show status bar (required in `mvim -v`)
 
-set incsearch                  " search as characters are entered
-set hlsearch                   " highlight matches
 
-set tags=.git/tags    			   " redundant with fugitive
 
 " set foldenable                 " enable folding
 " set foldlevelstart=2           " 0 = all closed, 99 = all open
@@ -167,7 +282,6 @@ set tags=.git/tags    			   " redundant with fugitive
 " " autocmd FileType vim :syntax match Comment /"▶▶\|/ conceal
 
 " greplace
-set grepprg=ag
 let g:grep_cmd_opts = '--line-numbers --noheading'
 
 
@@ -268,8 +382,8 @@ nnoremap k gk
 
 
 " keep current visual block selection active after changing indent
-vnoremap < <gv
-vnoremap > >gv
+"vnoremap < <gv
+"vnoremap > >gv
 
 " horizontal scrolling
 " map zl zL
@@ -376,8 +490,8 @@ nnoremap <leader>hr :%s/\(\w*\): \([':]\)/:\1 => \2/gc
 "set winheight=9999
 
 " switch tabs with <ctrl-h>, <ctrl-l>
-"noremap <c-h> :tabprev<cr>
-"noremap <c-l> :tabnext<cr>
+noremap <PageUp> :tabprev<cr>
+noremap <PageDown> :tabnext<cr>
 
 " delimitMate
 " Stop completion with enter, in addition to default ctrl+y
@@ -491,13 +605,11 @@ let g:session_default_to_last = 1
 " let g:multi_cursor_quit_key = '<Esc>'
 
 " airline
-"let g:airline_powerline_fonts = 1
-" let g:airline_theme="molokai"
-"let g:airline#extensions#tabline#enabled = 1
-"let g:airline_powerline_fonts = 1
-"let g:airline#extensions#tagbar#enabled = 1
-"let g:airline#extensions#tabline#enabled = 1
-"let g:airline#extensions#tabline#fnamemod = ':t'
+let g:airline_theme="molokai"
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tagbar#enabled = 1
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#fnamemod = ':t'
 
 " automatically remove trailing whitespaces
 " see http://stackoverflow.com/questions/356126/how-can-you-automatically-remove-trailing-whitespace-in-vim#356130
@@ -757,3 +869,80 @@ function! TestModified()
   call RunTests(s)
 endfunction
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" selecta https://github.com/garybernhardt/selecta
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Run a given vim command on the results of fuzzy selecting from a given shell
+" command. See usage below.
+function! SelectaCommand(choice_command, selecta_args, vim_command)
+  try
+    silent let selection = system(a:choice_command . " | selecta " . a:selecta_args)
+  catch /Vim:Interrupt/
+    " Swallow the ^C so that the redraw below happens; otherwise there will be
+    " leftovers from selecta on the screen
+    redraw!
+    return
+  endtry
+  redraw!
+  exec a:vim_command . " " . selection
+endfunction
+
+function! SelectaFile(path, search)
+  call SelectaCommand("find " . a:path . " -type f", a:search, ":e")
+endfunction
+
+" Find all files in all non-dot directories starting in the working directory.
+" Fuzzy select one of those. Open the selected file with :e.
+nnoremap <leader>tt :call SelectaFile(".", "")<cr>
+nnoremap <leader>tv :call SelectaFile("app/views", "-s //")<cr>
+nnoremap <leader>tc :call SelectaFile("app/controllers", "-s //")<cr>
+nnoremap <leader>tm :call SelectaFile("app/models", "-s //")<cr>
+nnoremap <leader>th :call SelectaFile("app/helpers", "-s //")<cr>
+nnoremap <leader>tl :call SelectaFile("lib", "-s /")<cr>
+nnoremap <leader>to :call SelectaFile("config", "-s /")<cr>
+nnoremap <leader>tp :call SelectaFile("public", "-s /")<cr>
+nnoremap <leader>ts :call SelectaFile("spec", "-s /")<cr>
+nnoremap <leader>tf :call SelectaFile("features", "-s //")<cr>
+nnoremap <leader>ta :call SelectaFile("app/assets", "-s //")<cr>
+nnoremap <leader>td :call SelectaFile("app/decorators", "-s //")<cr>
+nnoremap <leader>tr :call SelectaFile("app/services", "-s //")<cr>
+nnoremap <leader>tj :call SelectaFile("app/jobs", "-s //")<cr>
+
+"When you put your cursor anywhere in the word "User" and press <leader>g, This
+"mapping will open Selecta with the search box pre-populated with "User". It's
+"a quick and dirty way to find files related to an identifier.
+
+function! SelectaIdentifier(vim_command)
+  " Yank the word under the cursor into the z register
+  normal "zyiw
+  " Fuzzy match files in the current directory, starting with the word under
+  " the cursor
+  call SelectaCommand("find * -type f", "-s " . @z, a:vim_command)
+endfunction
+nnoremap <leader>ge :call SelectaIdentifier(":e")<cr>
+nnoremap <leader>gt :call SelectaIdentifier(":tabnew")<cr>
+nnoremap <leader>gv :call SelectaIdentifier(":vs")<cr>
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Diff tab management: open the current git diff in a tab
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+command! GdiffInTab tabedit %|Gdiff
+nnoremap <leader>d :GdiffInTab<cr>
+nnoremap <leader>D :tabclose<cr>
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" OpenChangedFiles COMMAND
+" Open a split for each dirty file in git
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! OpenChangedFiles()
+  only " Close all windows, unless they're modified
+  let status = system('git status -s | grep "^ \?\(M\|A\|UU\|??\)" | sed "s/^.\{3\}//"')
+  let filenames = split(status, "\n")
+  exec "edit " . filenames[0]
+  for filename in filenames[1:]
+    exec "tabnew " . filename
+  endfor
+endfunction
+command! OpenChangedFiles :call OpenChangedFiles()
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
