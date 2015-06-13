@@ -11,7 +11,7 @@ Plug 'bling/vim-airline'
 
 " formatting and navigation
 Plug 'tpope/vim-surround'
-Plug 'tpope/vim-unimpaired'
+"Plug 'tpope/vim-unimpaired'
 
 " git
 Plug 'tpope/vim-fugitive'
@@ -27,8 +27,9 @@ Plug 'junegunn/vim-easy-align', { 'on': 'EasyAlign' }
 " autocomplete and ide
 "Plug 'Raimondi/delimitMate'
 Plug 'Valloric/YouCompleteMe', { 'do': './install.sh' }
-"Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-commentary'
 " Plug 'tomtom/tcomment_vim'
+Plug 'terryma/vim-multiple-cursors'
 
 " syntax
 Plug 'scrooloose/syntastic'
@@ -38,9 +39,6 @@ Plug 'scrooloose/syntastic'
 Plug 'rking/ag.vim'
 Plug 'skwp/greplace.vim', { 'on': ['Gsearch', 'Greplace'] }
 
-" supertab
-"Plug 'ervandew/supertab'
-
 " snippets
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
@@ -49,8 +47,6 @@ Plug 'honza/vim-snippets'
 " Plug 'tpope/vim-rails'
 Plug 'tpope/vim-rails', { 'for': 'ruby' }
 Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
-" Plug 'thoughtbot/vim-rspec', { 'for': 'ruby', 'on': ['RunCurrentSpecFile', 'RunNearestSpec', 'RunLastSpec'] }
-" Plug 'thoughtbot/vim-rspec'
 Plug 'tpope/vim-bundler', { 'for': 'ruby' }
 Plug 'slim-template/vim-slim', { 'for': 'slim' }
 Plug 'nelstrom/vim-textobj-rubyblock', { 'for': 'ruby' }
@@ -219,13 +215,17 @@ let g:ycm_key_list_previous_completion=[]
 "             \}
 
 " better key bindings for UltiSnipsExpandTrigger
-let g:UltiSnipsExpandTrigger = "<tab>"
+let g:UltiSnipsExpandTrigger = "<c-s>"
 let g:UltiSnipsJumpForwardTrigger = "<tab>"
 let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
 "let g:UltiSnipsExpandTrigger="<c-tab>"
-let g:UltiSnipsListSnippets="<c-tab>"
+let g:UltiSnipsListSnippets="<c-e>"
 "let g:SuperTabCrMapping = 0
-let g:UltiSnipsUsePythonVersion=2
+"let g:UltiSnipsUsePythonVersion=2
+
+" ycm
+let g:ycm_autoclose_preview_window_after_completion = 1
+let g:ycm_min_num_of_chars_for_completion = 1
 
 " vmap <Leader>blame :<C-U>!git blame <C-R>=expand("%:p") <CR> \| sed -n <C-R>=line("'<") <CR>,<C-R>=line("'>") <CR>p <CR>
 
@@ -376,7 +376,7 @@ nnoremap <leader>] :tag /<c-r>=expand('<cword>')<cr><cr>
 
 " wrapped lines fixes
 noremap $ g$
-noremap ^ g
+noremap ^ g^
 nnoremap j gj
 nnoremap k gk
 
@@ -394,13 +394,6 @@ nnoremap Y y$
 " ◀◀
 
 
-" rspec
-"let g:rspec_command = '!time bundle exec rspec {spec}'
-"noremap <leader>t :call RunCurrentSpecFile()<cr>
-"noremap <leader>s :call RunNearestSpec()<cr>
-"noremap <leader>l :call RunLastSpec()<cr>
-
-
 " clear out a search
 nnoremap <leader><space> :nohlsearch<cr>
 
@@ -408,17 +401,14 @@ nnoremap <leader><space> :nohlsearch<cr>
 vmap Q gq
 nmap Q gqap
 
-" Efficient save commands
-"nnoremap ; :
-
 " map jj to esc
-inoremap jj <esc>
+"inoremap jj <esc>
 
 " run makefile
 noremap <silent> mm :!make<cr>
 
 " tab shortcut
-cabbrev tn tabnew
+"cabbrev tn tabnew
 
 
 " TagbarToggle
@@ -449,11 +439,6 @@ nmap ss :so %<cr>
 map :src<cr> :so ~/.vimrc<cr>
 nmap sss :src
 
-" splits
-"map <C-J> <C-W>j<C-W>_
-"map <C-K> <C-W>k<C-W>_
-"map <C-L> <C-W>l<C-W>_
-"map <C-H> <C-W>h<C-W>_
 " from: https://github.com/vijaydev/dotfiles/blob/master/vimrc
 nnoremap ss <C-w>s
 nnoremap vv <C-w>v
@@ -468,8 +453,8 @@ nnoremap <leader>-- 10<C-w>-
 
 " easier split resizing
 " use with relative [width +3] or absolute [width 30]
-ca width vertical resize
-ca height resize
+"ca width vertical resize
+"ca height resize
 
 " relpalce last find with confirmation
 nnoremap <leader>s :%s///cg<left><left><left>
@@ -501,108 +486,19 @@ noremap <PageDown> :tabnext<cr>
 "let g:delimitMate_expand_cr = 1
 "let g:delimitMate_expand_space = 1
 
-" ctrlp
-" let g:ctrlp_map = '<c-p>'
-"map <c-p> :CtrlP<cr>
-"map <c-t> :CtrlPTag<cr>
-"let g:ctrlp_dotfiles            = 1
-"let g:ctrlp_show_hidden         = 1
-"let g:ctrlp_cmd                 = 'CtrlPMixed'       " search anything (in "files, buffers and MRU files at the same time.)
-"let g:ctrlp_cmd                 = 'CtrlP'
-"let g:ctrlp_working_path_mode   = 'ra'               " search for nearest "ancestor like .git, .hg, and the directory of the current file
-"let g:ctrlp_match_window        = 'top,order:ttb'
-"let g:ctrlp_max_height          = 12                 " maxiumum height of match "window
-"let g:ctrlp_switch_buffer       = 'et'               " jump to a file if it's "open already
-"let g:ctrlp_use_caching         = 1                  " enable caching
-"let g:ctrlp_clear_cache_on_exit = 0                  " speed up by not removing "clearing cache evertime
-"let g:ctrlp_mruf_max            = 250                " number of recently opened "files
-"
-"if exists('g:ctrlp_user_command')
-"	unlet g:ctrlp_user_command
-"end
-
-"if exists('g:ctrlp_custom_ignore')
-"	unlet g:ctrlp_custom_ignore
-"end
-
-"if executable('ag')
-  " Use ag in CtrlP for listing files. Lightning fast and respects .gitignore
-"  let g:ctrlp_user_command =
-"    \ 'ag %s --files-with-matches -g "" --ignore "\.git$\|\.hg$\|\.svn$"'
-
-  " ag is fast enough that CtrlP doesn't need to cache
-"  let g:ctrlp_use_caching = 0
-
-"else
-  " Fall back to using git ls-files if Ag is not available
-"  let g:ctrlp_custom_ignore = '\.git$\|\.hg$\|\.svn$'
-"  let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files . --cached --"exclude-standard --others']
-
-"endif
-
-"let g:ctrlp_prompt_mappings = {
-"	\ 'AcceptSelection("e")': ['<c-t>'],
-"	\ 'AcceptSelection("t")': ['<cr>', '<2-LeftMouse>'],
-"  \ 'ToggleType(1)':        ['<c-u>', '<c-up>'],
-"  \ 'ToggleType(-1)':       ['<c-y>', '<c-down>'],
-"  \ 'PrtExit()':            ['<c-l>', '<esc>', '<c-c>', '<c-g>'],
-"  \ 'PrtSelectMove("j")':   ['<c-n>', '<down>'],
-"  \ 'PrtSelectMove("k")':   ['<c-p>', '<up>'],
-"  \ 'PrtHistory(-1)':       ['<c-j>'],
-"  \ 'PrtHistory(1)':        ['<c-k>'],
-"  \ }
-
-" func! MyPrtMappings()
-"     let g:ctrlp_prompt_mappings = {
-"         \ 'AcceptSelection("e")': ['<c-t>'],
-"         \ 'AcceptSelection("t")': ['<cr>', '<2-LeftMouse>'],
-"         \ }
-" endfunc
-
-" func! MyCtrlPTag()
-"     let g:ctrlp_prompt_mappings = {
-"         \ 'AcceptSelection("e")': ['<cr>', '<2-LeftMouse>'],
-"         \ 'AcceptSelection("t")': ['<c-t>'],
-"         \ }
-"     CtrlPBufTag
-" endfunc
-
-" let g:ctrlp_buffer_func = { 'exit': 'MyPrtMappings' }
-" com! MyCtrlPTag call MyCtrlPTag()
-
-" coffee: https://gist.github.com/michaelglass/5210282
-"let g:ctrlp_buftag_types = {
-"	\ 'coffee'     : '--language-force=coffee --coffee-types=cmfvf'
-"\ }
-
-" Open goto symbol on current buffer
-"nmap <D-r> :MyCtrlPTag<cr>
-"imap <D-r> <esc>:MyCtrlPTag<cr>
-
-" Open goto symbol on all buffers
-"nmap <D-R> :CtrlPBufTagAll<cr>
-"imap <D-R> <esc>:CtrlPBufTagAll<cr>
-
-" Open goto file
-"nmap <D-t> :CtrlP<cr>
-"imap <D-t> <esc>:CtrlP<cr>
-
-
-" ycm
-let g:ycm_autoclose_preview_window_after_completion = 1
-let g:ycm_min_num_of_chars_for_completion = 1
-
 " session and autosave
 let g:session_autosave = 'yes'
 let g:session_autoload = 'yes'
 let g:session_default_to_last = 1
 
+" slow multiple_cursors & YCM
+function! Multiple_cursors_before()
+    let g:ycm_auto_trigger = 0
+endfunction
 
-" let g:multi_cursor_use_default_mapping = 0
-" let g:multi_cursor_next_key = '<D-d>'
-" let g:multi_cursor_prev_key = '<D-u>'
-" let g:multi_cursor_skip_key = '<D-k>' " until we get multiple keys support
-" let g:multi_cursor_quit_key = '<Esc>'
+function! Multiple_cursors_after()
+    let g:ycm_auto_trigger = 1
+endfunction
 
 " airline
 let g:airline_theme="molokai"
