@@ -8,6 +8,7 @@ let g:plug_timeout=500
 Plug 'scrooloose/nerdtree', { 'on':  ['NERDTree', 'NERDTreeToggle'] }
 Plug 'majutsushi/tagbar'
 Plug 'bling/vim-airline'
+Plug 'jiangmiao/auto-pairs'
 
 " formatting and navigation
 Plug 'tpope/vim-surround'
@@ -18,10 +19,10 @@ Plug 'tpope/vim-fugitive'
 "Plug 'airblade/vim-gitgutter'
 
 " undo
-Plug 'sjl/gundo.vim', { 'on': 'Gundo' }
+Plug 'sjl/gundo.vim'
 
 " alignment
-Plug 'junegunn/vim-easy-align', { 'on': 'EasyAlign' }
+Plug 'junegunn/vim-easy-align'
 " Plug 'godlygeek/tabular', { 'on': 'Tabularize' }
 
 " autocomplete and ide
@@ -47,7 +48,6 @@ Plug 'honza/vim-snippets'
 " Plug 'tpope/vim-rails'
 Plug 'tpope/vim-rails', { 'for': 'ruby' }
 Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
-Plug 'tpope/vim-bundler', { 'for': 'ruby' }
 Plug 'slim-template/vim-slim', { 'for': 'slim' }
 Plug 'nelstrom/vim-textobj-rubyblock', { 'for': 'ruby' }
 Plug 'kchmck/vim-coffee-script', { 'for': 'coffee' }
@@ -82,11 +82,24 @@ set ignorecase
 set smartcase
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 3 tags
-" TagList
-"set tags=tags,gems.tags;
-" uso de ctags con gems
-"set tags+=gems.tags
-set tags=.git/tags    			   " redundant with fugitive
+" vim-bundler don't do the job
+" set tags=.git/tags <-- this is done for vim-fugitive
+function! SetGemsTags()
+  if filereadable('./Gemfile')
+    let tag_paths=system("bundle show --paths")
+    let tag_paths=substitute(tag_paths, "\\n", "/tags,", "g")
+    return tag_paths
+  end
+  return ''
+endfunction
+let &tags=SetGemsTags()
+
+" generate local tags on write buffer
+let b:git_dir = expand('%:p:h') . '/.git'
+autocmd BufWritePost *
+  \ if isdirectory(b:git_dir) && executable(b:git_dir.'/hooks/ctags') |
+  \   call system('"'.b:git_dir.'/hooks/ctags" &') |
+  \ endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 4 displaying text
 "set scrolloff=1
@@ -104,6 +117,7 @@ set cursorline
 set colorcolumn=72,80,120
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 6 multiple windows
+set hidden
 "" vim-powerline https://github.com/Lokaltog/vim-powerline
 set laststatus=2 " Always display the statusline in all windows
 set splitright                 " Split vertical windows right to the current windows
@@ -133,8 +147,9 @@ set complete=.,w,b,u,t,i
 " Influences the working of <BS>, <Del>, CTRL-W and CTRL-U in Insert mode.
 set backspace=indent,eol,start
 " show matching brackets
-set showmatch
+" set showmatch
 set nrformats-=octal
+let loaded_matchparen = 1
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "14 tabs and indenting
 set tabstop=2
@@ -157,6 +172,10 @@ set shiftround
 set diffopt=vertical
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "17 mapping
+" all 3 fixes slow O inserts
+set timeout
+set timeoutlen=1000
+set ttimeoutlen=100
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "18 reading and writing files
 set autowrite                  " Automatically save before :next, :make etc.
@@ -166,6 +185,7 @@ set fileformats=unix,dos,mac   " Prefer Unix over Windows over OS 9 formats
 "19 the swap file
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "20 command line editing
+set wildmenu
 set wildmode=list:longest,full
 set undofile
 if &undodir =~# '^\.\%(,\|$\)'
@@ -194,6 +214,7 @@ filetype plugin indent on
 syntax on
 let mapleader = ","
 
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " mappings
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -201,8 +222,8 @@ let mapleader = ","
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" utilisnips & YouCompleteMe
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" utilisnips
 " taken from: http://stackoverflow.com/a/22253548/4151953
 " make YCM compatible with UltiSnips (using supertab)
 "let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
@@ -235,20 +256,23 @@ let g:ycm_min_num_of_chars_for_completion = 1
 "autocmd FileType ruby,eruby let g:rubycomplete_classes_in_global = 1
 "autocmd Filetype ruby,eruby let g:rubycomplete_use_bundler = 1
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" autopairs
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:AutoPairs =  {'(':')', '[':']', '{':'}',"'":"'",'"':'"', '`':'`', '|':'|'}
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-ruby
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:ruby_indent_access_modifier_style = 'outdent'
 
 
-map <leader>dir :e<c-r>=expand('%:p:h') . '/'<cr>
+" map <leader>dir :e<c-r>=expand('%:p:h') . '/'<cr>
 " map <leader>s :split<c-r>=expand('%:p:h') . '/'<cr>
 " map <leader>v :vsplit<c-r>=expand('%:p:h') . '/'<cr>
 
 " basics
-runtime macros/matchit.vim	   " jump between keywords with %
-
-syntax on
-filetype plugin indent on
+" runtime macros/matchit.vim	   " jump between keywords with %
 
 
 
@@ -308,6 +332,15 @@ nnoremap <leader>v V`]
 " break line on comma
 " nmap <leader>, 0f,li
 
+" This last mapping lets me quickly open up my ~/.vimrc file in a new tab
+nnoremap <leader>ev :tabnew $MYVIMRC<cr>
+
+" <c-^> switch to alternative buffer
+nnoremap <leader><leader> <c-^>
+
+noremap <c-t> <esc>:tabnew<cr>
+noremap <leader>t <c-t>
+
 " copy to clipboard
 "map <leader>cy "*y
 " paste from clipboard
@@ -322,7 +355,7 @@ cnoremap %% <C-R>=expand('%:h').'/'<cr>
 map <leader>ee :edit %%
 
 " toggle gundo
-nnoremap <leader>u :GundoToggle<cr>
+" nnoremap <leader>u :GundoToggle<cr>
 
 
 " paste multiple times from the same yank
@@ -330,31 +363,8 @@ nnoremap <leader>u :GundoToggle<cr>
 xnoremap p pgvy:
 
 
-" insert blank lines with <enter>
-"map <Enter> o<esc>
-" map <S-Enter> O<esc>
-
-" comment lines with <cmd+/> (vis Sublime)
-" map <D-/> :TComment<cr>
-" vmap <D-/> :TComment<cr>gv
-"map <D-/> gcc
-"vmap <D-/> gcc
-
-
-" indent lines with <cmd+[> and <cmd+]> (vis Sublime)
-"nmap <D-]> >>
-"nmap <D-[> <<
-"vmap <D-[> <gv
-"vmap <D-]> >gv
-
-
 " indent entire file with <leader>i
 map <leader>i mmgg=G`m<cr>
-
-
-" paste from clipboard
-map <leader>p :set paste<cr>o<esc>"*]p:set nopaste<cr>
-map <D-v> :set paste<cr>o<esc>"*]p:set nopaste<cr>
 
 
 " NERDTree setting
@@ -362,16 +372,8 @@ nnoremap <leader>n :NERDTreeToggle<cr>
 let g:NERDTreeShowHidden=1
 
 
-" jump to tag with <option-cmd-down>
-"nmap <M-D-Down> ^]
-
-
 " jump to css class or id (usually) with <leader>]
 nnoremap <leader>] :tag /<c-r>=expand('<cword>')<cr><cr>
-
-
-" select all in gui with cmd+a
-"nnoremap <D-a> ggVG
 
 
 " wrapped lines fixes
@@ -390,7 +392,7 @@ nnoremap k gk
 " map zh zH
 
 " yank from cursor to end of line with Y, to be consistent with C and D
-nnoremap Y y$
+" nnoremap Y y$
 " ◀◀
 
 
@@ -405,7 +407,7 @@ nmap Q gqap
 "inoremap jj <esc>
 
 " run makefile
-noremap <silent> mm :!make<cr>
+" noremap <silent> mm :!make<cr>
 
 " tab shortcut
 "cabbrev tn tabnew
@@ -474,24 +476,25 @@ nnoremap <leader>hr :%s/\(\w*\): \([':]\)/:\1 => \2/gc
 "set winminheight=5
 "set winheight=9999
 
-" switch tabs with <ctrl-h>, <ctrl-l>
+" switch tabs
 noremap <PageUp> :tabprev<cr>
 noremap <PageDown> :tabnext<cr>
 
-" delimitMate
-" Stop completion with enter, in addition to default ctrl+y
-"imap <expr> <cr> pumvisible() ? "\<c-y>" : "<Plug>delimitMateCR"
+" switch to previous/next buffer
+nnoremap <leader><PageUp> :BufSurfBack<CR>
+nnoremap <leader><PageDown> :BufSurfForward<CR>
 
-" create line break when pressing enter
-"let g:delimitMate_expand_cr = 1
-"let g:delimitMate_expand_space = 1
+" Center screen when scrolling search results
+nmap n nzz
+nmap N Nzz
+nmap ? ?zz
 
 " session and autosave
 let g:session_autosave = 'yes'
 let g:session_autoload = 'yes'
 let g:session_default_to_last = 1
 
-" slow multiple_cursors & YCM
+" multiple_cursors & YCM
 function! Multiple_cursors_before()
     let g:ycm_auto_trigger = 0
 endfunction
@@ -507,7 +510,24 @@ let g:airline#extensions#tagbar#enabled = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#fnamemod = ':t'
 
+" save on focus lost
+autocmd FocusLost * :wa
+
+augroup MyAutoCmd
+    autocmd!
+    autocmd MyAutoCmd BufWritePost $MYVIMRC nested source $MYVIMRC
+augroup END
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" see https://github.com/r00k/vimscript_talk/blob/master/examples.vim
+function! ShortCwd()
+  " Last arg is empty, but you must pass all args to funcs.
+  return substitute(getcwd(), '/home/alejandro/', "~/", '')
+endfunction
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " automatically remove trailing whitespaces
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " see http://stackoverflow.com/questions/356126/how-can-you-automatically-remove-trailing-whitespace-in-vim#356130
 fun! <SID>StripTrailingWhitespaces()
     let l = line(".")
@@ -517,43 +537,9 @@ fun! <SID>StripTrailingWhitespaces()
 endfun
 autocmd BufWritePre * :call <SID>StripTrailingWhitespaces()
 
-" fill rest of line with characters
-function! FillLine( str )
-	" clear existing 'str's at end of line, if any
-	".s/=execute(echo a:str)$/$/g
-	".s/^\(\s*\)\(\A*\)\([^\A]*\)\2*$/\1\2/g
-	.s/\A*$//g " OK, can't figure out how to do that. Just clear all non-alphanumeric stuff
-
-	let tw = &textwidth
-	if tw==0 | let tw = 80 | endif            " set tw to the desired total length
-		.s/[[:space:]]*$//                      " strip trailing spaces first
-		let reps = (tw - col("$")) / len(a:str) " calculate total number of 'str's to insert
-		if reps > 0                             " insert them, if there's room,
-			.s/$/\=(' '.repeat(a:str, reps))/     " removing trailing spaces (though forcing there to be one)
-	endif
-endfunction
-command! -nargs=1 FF call FillLine('<args>')
-
-" change punctuation at end of line
-function! ToggleEOLPunctuation()
-	s/[;,.]\s*$//ge                       " remove selected punctuation or whitespace from EOL
-	let l:c = getchar()                   " get replacement char, or ' ' to delete
-	if l:c =~ "\<esc>" || l:c =~ "\<c-c>" " bail out if escaped
-		return
-	endif
-	.s/$/\=nr2char(l:c)/ge                " insert at EOL
-	.s/\s\+$//ge                          " kludge to delete ' ' (TBD: move to if clause)
-endfunction
-nmap <silent> t :call ToggleEOLPunctuation()<cr>
-
-" see https://github.com/r00k/vimscript_talk/blob/master/examples.vim
-function! ShortCwd()
-  " Last arg is empty, but you must pass all args to funcs.
-  return substitute(getcwd(), '/Users/rct/', "~/", '')
-endfunction
-nmap :pwd :echo ShortCwd()
-
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Jump to last cursor position unless it's invalid or in an event handler
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 autocmd BufReadPost *
   \ if line("'\"") > 0 && line("'\"") <= line("$") |
   \   exe "normal g`\"" |
@@ -694,7 +680,7 @@ nnoremap <leader>. :call OpenInTabTestAlternate()<cr>
 "endfunction
 "call MapCR()
 "nnoremap <leader>U :call RunTestFile()<cr>
-nnoremap <leader>, :call RunNearestTest()<cr>
+nnoremap <leader>u :call RunNearestTest()<cr>
 "nnoremap <leader>a :call RunTests('')<cr>
 "nnoremap <leader>m :call TestModified()<cr>
 "nnoremap <leader>c :w\|:!script/features<cr>
