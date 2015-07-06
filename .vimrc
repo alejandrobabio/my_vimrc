@@ -1,4 +1,5 @@
 set nocompatible
+filetype off " required
 
 " install plugins
 call plug#begin('~/.vim/plugged')
@@ -70,7 +71,6 @@ call plug#end()
 " options. run  `:options` for help
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 1 important
-set nocompatible
 " Toggle paste mode while in insert mode with F10
 set pastetoggle=<F10>
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -95,9 +95,10 @@ endfunction
 let &tags=SetGemsTags()
 
 " generate local tags on write buffer
+" http://tbaggery.com/2011/08/08/effortless-ctags-with-git.html
 let b:git_dir = expand('%:p:h') . '/.git'
 autocmd BufWritePost *
-  \ if isdirectory(b:git_dir) && executable(b:git_dir.'/hooks/ctags') |
+  \ if exists('b:git_dir') && isdirectory(b:git_dir) && executable(b:git_dir.'/hooks/ctags') |
   \   call system('"'.b:git_dir.'/hooks/ctags" &') |
   \ endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -224,103 +225,48 @@ let mapleader = ","
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " utilisnips & YouCompleteMe
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" taken from: http://stackoverflow.com/a/22253548/4151953
-" make YCM compatible with UltiSnips (using supertab)
-"let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
-"let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
-let g:ycm_key_list_select_completion=[]
-let g:ycm_key_list_previous_completion=[]
-"let g:SuperTabDefaultCompletionType = '<C-n>'
-"let g:ycm_filetype_specific_completion_to_disable = {
-"             \ 'ruby': 1
-"             \}
-
 " better key bindings for UltiSnipsExpandTrigger
 let g:UltiSnipsExpandTrigger = "<c-s>"
 let g:UltiSnipsJumpForwardTrigger = "<tab>"
 let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
-"let g:UltiSnipsExpandTrigger="<c-tab>"
 let g:UltiSnipsListSnippets="<c-e>"
-"let g:SuperTabCrMapping = 0
-"let g:UltiSnipsUsePythonVersion=2
 
 " ycm
 let g:ycm_autoclose_preview_window_after_completion = 1
 let g:ycm_min_num_of_chars_for_completion = 1
+let g:ycm_key_list_select_completion=[]
+let g:ycm_key_list_previous_completion=[]
 
-" vmap <Leader>blame :<C-U>!git blame <C-R>=expand("%:p") <CR> \| sed -n <C-R>=line("'<") <CR>,<C-R>=line("'>") <CR>p <CR>
-
-"autocmd FileType ruby,eruby set omnifunc=rubycomplete#Complete
-"autocmd FileType ruby,eruby let g:rubycomplete_buffer_loading = 1
-"autocmd FileType ruby,eruby let g:rubycomplete_rails = 1
-"autocmd FileType ruby,eruby let g:rubycomplete_classes_in_global = 1
-"autocmd Filetype ruby,eruby let g:rubycomplete_use_bundler = 1
-
+" snippets don't work after dot, so I use a space and rid the space before write.
+function! RidDotSpace()
+  :normal mZ
+  %s/\C\(\.\) \([a-z]\+\)/\1\2/e
+  :normal `Z
+endfunction
+autocmd BufWritePre *.rb :call RidDotSpace()
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " autopairs
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:AutoPairs =  {'(':')', '[':']', '{':'}',"'":"'",'"':'"', '`':'`', '|':'|'}
+let g:AutoPairs =  {'(':')', '[':']', '{':'}',"'":"'",'"':'"', '`':'`', '|':'|', '/':'/'}
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-ruby
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:ruby_indent_access_modifier_style = 'outdent'
 
-
-" map <leader>dir :e<c-r>=expand('%:p:h') . '/'<cr>
-" map <leader>s :split<c-r>=expand('%:p:h') . '/'<cr>
-" map <leader>v :vsplit<c-r>=expand('%:p:h') . '/'<cr>
-
-" basics
-" runtime macros/matchit.vim	   " jump between keywords with %
-
-
-
-"set viminfo+=n~/.vim/.viminfo
-
-"set modelines=3                " number of lines checked for modelines
-
-"set wrap linebreak nolist      " wrap on word boundaries
-
-"if has('breakindent')
-"  set breakindent              " indent wrapped lines to the same level as the first line
-"endif
-
-"set wildmenu                   " visual autocomplete for command menu
-
-
-
-" set foldenable                 " enable folding
-" set foldlevelstart=2           " 0 = all closed, 99 = all open
-" set foldnestmax=10             " 10 nested fold max
-" set foldmethod=indent          " fold based on indent level
-
-" gitgutter
-"let g:gitgutter_enabled = 1
-
-" hidden fold markers -- BETA
-" autocmd FileType erlang :set foldmarker=\ %▶▶,\ %◀◀ foldmethod=marker commentstring= conceallevel=2
-" autocmd FileType erlang :syntax match Comment /%▶▶\|%◀◀/ conceal
-
-" " autocmd FileType vim :set foldmarker=\ \"▶▶,\ \ foldmethod=marker commentstring= conceallevel=3
-" " autocmd FileType vim :syntax match Comment /"▶▶\|/ conceal
-
 " greplace
 let g:grep_cmd_opts = '--line-numbers --noheading'
-
 
 " alignment
 " Start interactive EasyAlign in visual mode (e.g. vip<Enter>)
 vmap <Enter> <plug>(EasyAlign)
 
-
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)
 nmap ga <plug>(EasyAlign)
 
-
 " space open/closes folds
-nnoremap <space> za
-
+" nnoremap <space> za
+nnoremap <space> :
 
 " highlight last inserted text
 nnoremap gV `[v`]
@@ -354,34 +300,25 @@ vmap <tab> %
 cnoremap %% <C-R>=expand('%:h').'/'<cr>
 map <leader>ee :edit %%
 
-" toggle gundo
-" nnoremap <leader>u :GundoToggle<cr>
-
-
 " paste multiple times from the same yank
 " i.e., don't re-yank the replaced line after a paste
 xnoremap p pgvy:
 
-
 " indent entire file with <leader>i
 map <leader>i mmgg=G`m<cr>
-
 
 " NERDTree setting
 nnoremap <leader>n :NERDTreeToggle<cr>
 let g:NERDTreeShowHidden=1
 
-
 " jump to css class or id (usually) with <leader>]
 nnoremap <leader>] :tag /<c-r>=expand('<cword>')<cr><cr>
 
-
 " wrapped lines fixes
-noremap $ g$
-noremap ^ g^
-nnoremap j gj
-nnoremap k gk
-
+" noremap $ g$
+" noremap ^ g^
+" nnoremap j gj
+" nnoremap k gk
 
 " keep current visual block selection active after changing indent
 "vnoremap < <gv
@@ -427,20 +364,6 @@ let g:tagbar_type_css = {
 \ ]
 \ }
 
-" camel case motiona
-" map w <Plug>CamelCaseMotion_w
-" map b <Plug>CamelCaseMotion_b
-" map e <Plug>CamelCaseMotion_e
-" sunmap w
-" sunmap b
-
-" source current file
-nmap ss :so %<cr>
-
-" source ~/.vimrc
-map :src<cr> :so ~/.vimrc<cr>
-nmap sss :src
-
 " from: https://github.com/vijaydev/dotfiles/blob/master/vimrc
 nnoremap ss <C-w>s
 nnoremap vv <C-w>v
@@ -468,21 +391,13 @@ nnoremap <leader>rh :%s/:\([^=,'"]*\) =>/\1:/gc
 " replace 'bar:' with ':bar =>'
 nnoremap <leader>hr :%s/\(\w*\): \([':]\)/:\1 => \2/gc
 
-" readjust split sizes based on current active split
-" rct does not understand this
-" see https://upcase.com/videos/splits-with-patrick-brisbin
-"set winwidth=84
-"set winheight=5
-"set winminheight=5
-"set winheight=9999
-
 " switch tabs
 noremap <PageUp> :tabprev<cr>
 noremap <PageDown> :tabnext<cr>
 
 " switch to previous/next buffer
-nnoremap <leader><PageUp> :BufSurfBack<CR>
-nnoremap <leader><PageDown> :BufSurfForward<CR>
+nnoremap <leader><PageUp> :bp<CR>
+nnoremap <leader><PageDown> :bn<CR>
 
 " Center screen when scrolling search results
 nmap n nzz
@@ -542,7 +457,7 @@ autocmd BufWritePre * :call <SID>StripTrailingWhitespaces()
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 autocmd BufReadPost *
   \ if line("'\"") > 0 && line("'\"") <= line("$") |
-  \   exe "normal g`\"" |
+  \   exec "normal g`\"" |
   \ endif
 
 
@@ -631,9 +546,10 @@ endfunction
 
 function! OpenInTabTestAlternate()
   let new_file = AlternateForCurrentFile()
-  exec ':vs'
   if match(expand("%"), '^spec/') != -1
-    exec "normal \<C-w>l"
+    :vs
+  else
+    :leftabove vs
   endif
   exec ':e ' . new_file
 endfunction
@@ -669,12 +585,13 @@ function! AlternateForCurrentFile()
   return new_file
 endfunction
 
-nnoremap <leader>. :call OpenTestAlternate()<cr>
+" nnoremap <leader>. :call OpenTestAlternate()<cr>
 nnoremap <leader>. :call OpenInTabTestAlternate()<cr>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " RUNNING TESTS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:spring = 'spring'
 "function! MapCR()
   "nnoremap <cr> :call RunTestFile()<cr>
 "endfunction
@@ -714,23 +631,24 @@ function! SetTestFile()
 endfunction
 
 function! RunTests(filename)
+    :echo 'RunTests'
     " Write the file and run tests for the given filename
     if expand("%") != ""
       :w
     end
     :silent !clear
     if match(a:filename, '\.coffee') != -1
-        exec ":silent !echo 'time spring teaspoon '" . a:filename
-        exec ":!time spring teaspoon " . a:filename
+        exec ":silent !echo 'time " . g:spring . " teaspoon '" . a:filename
+        exec ":!time " . g:spring . " teaspoon " . a:filename
     elseif match(a:filename, '\.feature') != -1
-        exec ":silent !echo 'time spring cucumber '" .  a:filename
-        exec ":!time spring cucumber " . a:filename
+        exec ":silent !echo 'time " . g:spring . " cucumber '" .  a:filename
+        exec ":!time " . g:spring . " cucumber " . a:filename
     elseif match(a:filename, '_test\.rb') != -1
-        exec ":silent !echo 'time TESTOPTS=-p time spring rake test '" .  a:filename
-        exec ":!time TESTOPTS=-p spring rake test " . a:filename
+        exec ":silent !echo 'time TESTOPTS=-p time " . g:spring . " rake test '" .  a:filename
+        exec ":!time TESTOPTS=-p " . g:spring . " rake test " . a:filename
     else
-        exec ":silent !echo 'time spring rspec --color '" .  a:filename
-        exec ":!time spring rspec --color " . a:filename
+        exec ":silent !echo 'time " . g:spring . " rspec --color '" .  a:filename
+        exec ":!time " . g:spring . " rspec --color " . a:filename
     end
 endfunction
 
@@ -751,6 +669,8 @@ function! TestModified()
   call RunTests(s)
 endfunction
 
+command! Spring :let g:spring = 'spring'
+command! UnSpring :let g:spring = ''
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " selecta https://github.com/garybernhardt/selecta
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -805,6 +725,19 @@ nnoremap <leader>ge :call SelectaIdentifier(":e")<cr>
 nnoremap <leader>gt :call SelectaIdentifier(":tabnew")<cr>
 nnoremap <leader>gv :call SelectaIdentifier(":vs")<cr>
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Open file from Gsearch
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! FileInTab()
+  " Yank the word under the cursor into the z register
+  normal "zyy
+  " take file name and open in tab.
+  let parts = split(@z, ':')
+  " exec "tabedit " . parts[0]
+  exec "vs " . parts[0]
+  exec ":" .parts[1]
+endfunction
+command! FileInTab :call FileInTab()
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Diff tab management: open the current git diff in a tab
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
