@@ -35,7 +35,7 @@ Plug 'terryma/vim-multiple-cursors'
 
 " syntax
 Plug 'scrooloose/syntastic'
-
+Plug 'tpope/vim-markdown'
 " search
 "Plug 'ctrlpvim/ctrlp.vim', { 'on': ['CtrlP', 'CtrlPTag'] }
 Plug 'rking/ag.vim'
@@ -50,12 +50,12 @@ Plug 'honza/vim-snippets'
 Plug 'tpope/vim-rails', { 'for': 'ruby' }
 Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
 Plug 'slim-template/vim-slim', { 'for': 'slim' }
-Plug 'nelstrom/vim-textobj-rubyblock', { 'for': 'ruby' }
 Plug 'kchmck/vim-coffee-script', { 'for': 'coffee' }
 
 " text objects
 Plug 'kana/vim-textobj-user'
 Plug 'michaeljsmith/vim-indent-object'
+Plug 'nelstrom/vim-textobj-rubyblock', { 'for': 'ruby' }
 
 " linters
 "Plug 'dbakker/vim-lint'
@@ -63,9 +63,13 @@ Plug 'michaeljsmith/vim-indent-object'
 " colors
 Plug 'flazz/vim-colorschemes'
 
+" Improve code tools
+Plug 'ngmy/vim-rubocop'
+Plug 'rainerborene/vim-reek'
 
 call plug#end()
 
+runtime macros/matchit.vim
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " options. run  `:options` for help
@@ -84,23 +88,23 @@ set smartcase
 " 3 tags
 " vim-bundler don't do the job
 " set tags=.git/tags <-- this is done for vim-fugitive
-function! SetGemsTags()
-  if filereadable('./Gemfile')
-    let tag_paths=system("bundle show --paths")
-    let tag_paths=substitute(tag_paths, "\\n", "/tags,", "g")
-    return tag_paths
-  end
-  return ''
-endfunction
-let &tags=SetGemsTags()
+" function! SetGemsTags()
+"   if filereadable('./Gemfile')
+"     let tag_paths=system("bundle show --paths")
+"     let tag_paths=substitute(tag_paths, "\\n", "/tags,", "g")
+"     return tag_paths
+"   end
+"   return ''
+" endfunction
+" let &tags=SetGemsTags()
 
 " generate local tags on write buffer
 " http://tbaggery.com/2011/08/08/effortless-ctags-with-git.html
-let b:git_dir = expand('%:p:h') . '/.git'
-autocmd BufWritePost *
-  \ if exists('b:git_dir') && isdirectory(b:git_dir) && executable(b:git_dir.'/hooks/ctags') |
-  \   call system('"'.b:git_dir.'/hooks/ctags" &') |
-  \ endif
+" let b:git_dir = expand('%:p:h') . '/.git'
+" autocmd BufWritePost *
+"   \ if exists('b:git_dir') && isdirectory(b:git_dir) && executable(b:git_dir.'/hooks/ctags') |
+"   \   call system('"'.b:git_dir.'/hooks/ctags" &') |
+"   \ endif
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 4 displaying text
 "set scrolloff=1
@@ -118,7 +122,7 @@ set cursorline
 set colorcolumn=72,80,120
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 6 multiple windows
-set hidden
+" set hidden                   " hide a buffer when abandoned
 "" vim-powerline https://github.com/Lokaltog/vim-powerline
 set laststatus=2 " Always display the statusline in all windows
 set splitright                 " Split vertical windows right to the current windows
@@ -206,6 +210,7 @@ set encoding=utf-8
 "25 various
 " applies substitutions globally on lines. Without type /g
 set gdefault
+let g:netrw_dirhistmax = 0
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " else
 "colorscheme darkZ
@@ -220,8 +225,13 @@ let mapleader = ","
 " mappings
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" New Vim users will want the following lines to teach them to do things
+" right:
+nnoremap <up> <nop>
+nnoremap <down> <nop>
+nnoremap <left> <nop>
+nnoremap <right> <nop>
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " utilisnips & YouCompleteMe
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -237,11 +247,46 @@ let g:ycm_min_num_of_chars_for_completion = 1
 let g:ycm_key_list_select_completion=[]
 let g:ycm_key_list_previous_completion=[]
 
+:command! -bang -nargs=1 -range SubstituteUnlesString
+    \ <line1>,<line2>call s:SubstituteUnlessString("<bang>", <f-args>)
+
+" taked from http://vi.stackexchange.com/a/3030
+" Function: s:SubstituteUnlessString(bang, repl_arg) {{{3
+function! s:SubstituteUnlessString(bang, repl_arg) range abort
+  let do_loop = a:bang != "!"
+  let sep = a:repl_arg[0]
+  let fields = split(a:repl_arg, sep)
+  let cleansed_fields = map(copy(fields), 'substitute(v:val, "\\\\[<>]", "", "g")')
+  " build the action to execute
+  if fields[1] =~ '^\\='
+    let replacement = matchstr(fields[1], '^\\=\zs.*')
+  elseif fields[1] =~ '&\|\\\d'
+    let replacement = "'".substitute(fields[1], '&\|\\\(\d\)', '\=string(".submatch(".(submatch(0)=="&"?"0":submatch(1)).").")', 'g') ."'"
+  else
+    let replacement = string(fields[1])
+  endif
+  let action = '\=(match(map(synstack(line("."), col(".")), "synIDattr(v:val, \"name\")"), "\\cstring")==-1 ? '.replacement.' : submatch(0))'
+  let cmd = a:firstline . ',' . a:lastline . 's'
+    \. sep . fields[0]
+    \. sep . action
+        \. sep.(len(fields)>=3 ? fields[2] : '')
+  " echomsg cmd
+  exe 'silent' . cmd
+endfunction
+
 " snippets don't work after dot, so I use a space and rid the space before write.
 function! RidDotSpace()
-  :normal mZ
-  %s/\C\(\.\) \([a-z]\+\)/\1\2/e
-  :normal `Z
+  " mark current line
+  " :normal mZ
+  " :normal M
+  " let pos = line('.')
+    let l = line(".")
+    let c = col(".")
+  %SubstituteUnlesString/\C\(\.\) \([a-z]\+\)/\1\2/e
+    call cursor(l, c)
+  " go to marked line
+  " :exec 'normal ' . pos . 'G'
+  " :normal `Zzz
 endfunction
 autocmd BufWritePre *.rb :call RidDotSpace()
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -382,9 +427,9 @@ nnoremap <leader>-- 10<C-w>-
 "ca height resize
 
 " relpalce last find with confirmation
-nnoremap <leader>s :%s///cg<left><left><left>
+nnoremap <leader>s :%s///c<left><left>
 
-let g:browser = 'google-chrome -new-tab '
+let g:browser = 'google-chrome-beta -new-tab '
 
 " replace ':bar =>' with 'bar:'
 nnoremap <leader>rh :%s/:\([^=,'"]*\) =>/\1:/gc
@@ -420,9 +465,8 @@ endfunction
 
 " airline
 let g:airline_theme="molokai"
-let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tagbar#enabled = 1
-let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#enabled = 0
 let g:airline#extensions#tabline#fnamemod = ':t'
 
 " save on focus lost
@@ -434,6 +478,67 @@ augroup MyAutoCmd
 augroup END
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" syntastic setup
+" from: https://github.com/Casecommons/vim-config/blob/master/init/syntastic.vim
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+let g:syntastic_enable_signs = 1
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vim-reek
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:reek_always_show = 0
+let g:reek_on_loading = 0
+function! Ree()
+  :RunReek
+  " Shortcuts taken from Ack.vim - git://github.com/mileszs/ack.vim.git
+  exec "nnoremap <silent> <buffer> q :ccl<CR>"
+  exec "nnoremap <silent> <buffer> t <C-W><CR><C-W>T"
+  exec "nnoremap <silent> <buffer> T <C-W><CR><C-W>TgT<C-W><C-W>"
+  exec "nnoremap <silent> <buffer> o <CR>"
+  exec "nnoremap <silent> <buffer> go <CR><C-W><C-W>"
+  exec "nnoremap <silent> <buffer> h <C-W><CR><C-W>K"
+  exec "nnoremap <silent> <buffer> H <C-W><CR><C-W>K<C-W>b"
+  exec "nnoremap <silent> <buffer> v <C-W><CR><C-W>H<C-W>b<C-W>J<C-W>t"
+  exec "nnoremap <silent> <buffer> gv <C-W><CR><C-W>H<C-W>b<C-W>J"
+  exec "nnoremap <silent> <buffer> e <CR><C-w><C-w>:cclose<CR>"
+endfunction
+" :RunReek
+map <leader>ree :call Ree()<cr>
+" use :lopen to open location-list
+" use :lnext to next error
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" sandi_meter of current file
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! Sm()
+  let metrics = system("sandi_meter -d -p " . expand("%:p"))
+  :vnew|put=metrics| setlocal buftype=nofile bufhidden=hide noswapfile |
+endfunction
+
+:command! Sm :call Sm()
+" map <leader>Sm :call Sm()<cr>
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vim-rubocop
+nmap <Leader>rb :RuboCop<CR>
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vim-airline
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:airline_mode_map = {
+    \ '__' : '-',
+    \ 'n'  : 'N',
+    \ 'i'  : 'I',
+    \ 'R'  : 'R',
+    \ 'c'  : 'C',
+    \ 'v'  : 'V',
+    \ 'V'  : 'V',
+    \ '' : 'V',
+    \ 's'  : 'S',
+    \ 'S'  : 'S',
+    \ '' : 'S',
+    \ }
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " see https://github.com/r00k/vimscript_talk/blob/master/examples.vim
 function! ShortCwd()
   " Last arg is empty, but you must pass all args to funcs.
@@ -444,13 +549,18 @@ endfunction
 " automatically remove trailing whitespaces
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " see http://stackoverflow.com/questions/356126/how-can-you-automatically-remove-trailing-whitespace-in-vim#356130
-fun! <SID>StripTrailingWhitespaces()
+function! StripTrailingWhitespaces()
+    " :normal mZ
+"     :normal M
+"     let lnum = line(".")
     let l = line(".")
     let c = col(".")
     %s/\s\+$//e
     call cursor(l, c)
+"     :exec "normal " . lnum . "G"
+    " :normal `Zzz
 endfun
-autocmd BufWritePre * :call <SID>StripTrailingWhitespaces()
+autocmd BufWritePre * :call StripTrailingWhitespaces()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Jump to last cursor position unless it's invalid or in an event handler
@@ -556,10 +666,11 @@ endfunction
 
 function! AlternateForCurrentFile()
   let current_file = expand("%")
+  let current_file = substitute(current_file, getcwd() . '/', '' , '')
   let new_file = current_file
   let in_spec = match(current_file, '^spec/') != -1
   let going_to_spec = !in_spec
-  let in_app = match(current_file, '\<controllers\>') != -1 || match(current_file, '\<models\>') != -1 || match(current_file, '\<views\>') != -1 || match(current_file, '\<helpers\>') != -1 || match(current_file, '\<services\>') != -1 || match(current_file, '\<jobs\>') != -1
+  let in_app = match(current_file, '\<controllers\>') != -1 || match(current_file, '\<models\>') != -1 || match(current_file, '\<views\>') != -1 || match(current_file, '\<helpers\>') != -1 || match(current_file, '\<services\>') != -1 || match(current_file, '\<jobs\>') || match(current_file, '\<decorators\>') || match(current_file, '\<policies\>') != -1
   let in_app_assets = match(current_file, '\<javascripts\>') != -1
   if going_to_spec
     if in_app
@@ -591,7 +702,6 @@ nnoremap <leader>. :call OpenInTabTestAlternate()<cr>
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " RUNNING TESTS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:spring = 'spring'
 "function! MapCR()
   "nnoremap <cr> :call RunTestFile()<cr>
 "endfunction
@@ -647,8 +757,8 @@ function! RunTests(filename)
         exec ":silent !echo 'time TESTOPTS=-p time " . g:spring . " rake test '" .  a:filename
         exec ":!time TESTOPTS=-p " . g:spring . " rake test " . a:filename
     else
-        exec ":silent !echo 'time " . g:spring . " rspec --color '" .  a:filename
-        exec ":!time " . g:spring . " rspec --color " . a:filename
+        exec ":silent !echo 'time " . g:spring . " rspec '" .  a:filename
+        exec ":!time " . g:spring . " rspec " . a:filename
     end
 endfunction
 
@@ -669,7 +779,9 @@ function! TestModified()
   call RunTests(s)
 endfunction
 
-command! Spring :let g:spring = 'spring'
+let g:spring = 'spring'
+" let g:spring = 'zeus'
+command! Spring :let g:spring = 'zeus'
 command! UnSpring :let g:spring = ''
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " selecta https://github.com/garybernhardt/selecta
@@ -690,7 +802,7 @@ function! SelectaCommand(choice_command, selecta_args, vim_command)
 endfunction
 
 function! SelectaFile(path, search)
-  call SelectaCommand("find " . a:path . " -type f", a:search, ":e")
+  call SelectaCommand("find " . a:path . " -type f -not -path '*/\.*'", a:search, ":e")
 endfunction
 
 " Find all files in all non-dot directories starting in the working directory.
@@ -702,7 +814,7 @@ nnoremap <leader>tm :call SelectaFile("app/models", "-s //")<cr>
 nnoremap <leader>th :call SelectaFile("app/helpers", "-s //")<cr>
 nnoremap <leader>tl :call SelectaFile("lib", "-s /")<cr>
 nnoremap <leader>to :call SelectaFile("config", "-s /")<cr>
-nnoremap <leader>tp :call SelectaFile("public", "-s /")<cr>
+nnoremap <leader>tp :call SelectaFile("app/policies", "-s //")<cr>
 nnoremap <leader>ts :call SelectaFile("spec", "-s /")<cr>
 nnoremap <leader>tf :call SelectaFile("features", "-s //")<cr>
 nnoremap <leader>ta :call SelectaFile("app/assets", "-s //")<cr>
@@ -741,7 +853,7 @@ command! FileInTab :call FileInTab()
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Diff tab management: open the current git diff in a tab
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-command! GdiffInTab tabedit %|Gdiff
+command! GdiffInTab tabedit %|Gdiff HEAD
 nnoremap <leader>d :GdiffInTab<cr>
 nnoremap <leader>D :tabclose<cr>
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -760,4 +872,28 @@ endfunction
 command! OpenChangedFiles :call OpenChangedFiles()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" comands wrap unwrap
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! Wrap()
+  set wrap
+  " wrapped lines fixes
+  noremap $ g$
+  noremap ^ g^
+  nnoremap j gj
+  nnoremap k gk
+endfunction
+command! Wrap :call Wrap()
+
+function! Nowrap()
+  set nowrap
+  " return to nowrapped lines fixes
+  noremap $ $
+  noremap ^ ^
+  nnoremap j j
+  nnoremap k k
+endfunction
+command! Nowrap :call Nowrap()
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" use :AG .css example
+command! -nargs=* GS :Gsearch -G <args>
+command! -nargs=* AG :Ag -G <args>

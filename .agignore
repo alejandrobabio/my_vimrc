@@ -13,6 +13,7 @@ db/*.sqlite3
 # Ignore all logfiles and tempfiles.
 log/*.log
 tmp
+tmp/
 tags
 gems.tags
 **/database.yml
@@ -31,5 +32,4 @@ legacy*.sql
 *_names.yml
 .yardoc
 doc/
-config/deploy/production.rb
 .yardopts
