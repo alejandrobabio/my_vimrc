@@ -120,6 +120,9 @@ set hlsearch
 set cursorline
 " mark 72, 80 and 120 characters
 set colorcolumn=72,80,120
+
+" prevent lose colors
+syntax enable
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 6 multiple windows
 " set hidden                   " hide a buffer when abandoned
@@ -288,12 +291,16 @@ function! RidDotSpace()
   " :exec 'normal ' . pos . 'G'
   " :normal `Zzz
 endfunction
-autocmd BufWritePre *.rb :call RidDotSpace()
+" autocmd BufWritePre *.rb :call RidDotSpace()
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " autopairs
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:AutoPairs =  {'(':')', '[':']', '{':'}',"'":"'",'"':'"', '`':'`', '|':'|', '/':'/'}
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" matchit
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" set set matchpairs+=<:>
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-ruby
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -420,6 +427,8 @@ nnoremap <C-k> <C-w>k
 nnoremap <C-l> <C-w>l
 nnoremap <leader>++ 10<C-w>+
 nnoremap <leader>-- 10<C-w>-
+nnoremap <leader>>> 10<C-w>>
+nnoremap <leader><< 10<C-w><
 
 " easier split resizing
 " use with relative [width +3] or absolute [width 30]
@@ -432,9 +441,9 @@ nnoremap <leader>s :%s///c<left><left>
 let g:browser = 'google-chrome-beta -new-tab '
 
 " replace ':bar =>' with 'bar:'
-nnoremap <leader>rh :%s/:\([^=,'"]*\) =>/\1:/gc
+nnoremap <leader>rh :%s/:\([^=,'"]*\) =>/\1:/c
 " replace 'bar:' with ':bar =>'
-nnoremap <leader>hr :%s/\(\w*\): \([':]\)/:\1 => \2/gc
+nnoremap <leader>hr :%s/\(\w*\): \([':]\)/:\1 => \2/c
 
 " switch tabs
 noremap <PageUp> :tabprev<cr>
@@ -673,12 +682,13 @@ function! AlternateForCurrentFile()
   let in_app = match(current_file, '\<controllers\>') != -1 || match(current_file, '\<models\>') != -1 || match(current_file, '\<views\>') != -1 || match(current_file, '\<helpers\>') != -1 || match(current_file, '\<services\>') != -1 || match(current_file, '\<jobs\>') || match(current_file, '\<decorators\>') || match(current_file, '\<policies\>') != -1
   let in_app_assets = match(current_file, '\<javascripts\>') != -1
   if going_to_spec
-    if in_app
-      let new_file = substitute(new_file, '^app/', '', '')
-    end
     if in_app_assets
       let new_file = substitute(new_file, '^app/assets/', '', '')
       let new_file = substitute(new_file, '\.e\?coffee$', '_spec.coffee', '')
+    else
+      if in_app
+        let new_file = substitute(new_file, '^app/', '', '')
+      end
     end
     let new_file = substitute(new_file, '\.e\?rb$', '_spec.rb', '')
     let new_file = 'spec/' . new_file
@@ -688,9 +698,10 @@ function! AlternateForCurrentFile()
     if in_app_assets
       let new_file = 'app/assets/' . new_file
       let new_file = substitute(new_file, '_spec\.coffee$', '.coffee', '')
-    end
-    if in_app
-      let new_file = 'app/' . new_file
+    else
+      if in_app
+        let new_file = 'app/' . new_file
+      end
     end
   endif
   return new_file
@@ -781,7 +792,7 @@ endfunction
 
 let g:spring = 'spring'
 " let g:spring = 'zeus'
-command! Spring :let g:spring = 'zeus'
+command! Spring :let g:spring = 'spring'
 command! UnSpring :let g:spring = ''
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " selecta https://github.com/garybernhardt/selecta
@@ -802,7 +813,8 @@ function! SelectaCommand(choice_command, selecta_args, vim_command)
 endfunction
 
 function! SelectaFile(path, search)
-  call SelectaCommand("find " . a:path . " -type f -not -path '*/\.*'", a:search, ":e")
+  " call SelectaCommand("find " . a:path . " -type f -not -path '*/\.*'", a:search, ":e")
+  call SelectaCommand("git ls-files -c -o --exclude-standard " . a:path, a:search, ":e")
 endfunction
 
 " Find all files in all non-dot directories starting in the working directory.
@@ -816,7 +828,7 @@ nnoremap <leader>tl :call SelectaFile("lib", "-s /")<cr>
 nnoremap <leader>to :call SelectaFile("config", "-s /")<cr>
 nnoremap <leader>tp :call SelectaFile("app/policies", "-s //")<cr>
 nnoremap <leader>ts :call SelectaFile("spec", "-s /")<cr>
-nnoremap <leader>tf :call SelectaFile("features", "-s //")<cr>
+nnoremap <leader>tf :call SelectaFile("features", "-s /")<cr>
 nnoremap <leader>ta :call SelectaFile("app/assets", "-s //")<cr>
 nnoremap <leader>td :call SelectaFile("app/decorators", "-s //")<cr>
 nnoremap <leader>tr :call SelectaFile("app/services", "-s //")<cr>
@@ -876,6 +888,7 @@ command! OpenChangedFiles :call OpenChangedFiles()
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function! Wrap()
   set wrap
+  set nonumber
   " wrapped lines fixes
   noremap $ g$
   noremap ^ g^
@@ -886,6 +899,7 @@ command! Wrap :call Wrap()
 
 function! Nowrap()
   set nowrap
+  set number
   " return to nowrapped lines fixes
   noremap $ $
   noremap ^ ^
