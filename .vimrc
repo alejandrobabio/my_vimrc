@@ -23,7 +23,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'sjl/gundo.vim'
 
 " alignment
-Plug 'junegunn/vim-easy-align'
+" Plug 'junegunn/vim-easy-align'
 " Plug 'godlygeek/tabular', { 'on': 'Tabularize' }
 
 " autocomplete and ide
@@ -52,6 +52,9 @@ Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' }
 Plug 'slim-template/vim-slim', { 'for': 'slim' }
 Plug 'kchmck/vim-coffee-script', { 'for': 'coffee' }
 
+" React
+Plug 'mxw/vim-jsx'
+
 " text objects
 Plug 'kana/vim-textobj-user'
 Plug 'michaeljsmith/vim-indent-object'
@@ -67,6 +70,16 @@ Plug 'flazz/vim-colorschemes'
 Plug 'ngmy/vim-rubocop'
 Plug 'rainerborene/vim-reek'
 
+" Automatic make dirs
+Plug 'DataWraith/auto_mkdir'
+
+" wakatime.com
+Plug 'wakatime/vim-wakatime'
+
+Plug 'leafgarland/typescript-vim'
+
+" gist
+Plug 'mattn/gist-vim'
 call plug#end()
 
 runtime macros/matchit.vim
@@ -105,6 +118,10 @@ set smartcase
 "   \ if exists('b:git_dir') && isdirectory(b:git_dir) && executable(b:git_dir.'/hooks/ctags') |
 "   \   call system('"'.b:git_dir.'/hooks/ctags" &') |
 "   \ endif
+
+" create tags file in current working directory
+command! MakeTags :silent !ctags -R *
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 4 displaying text
 "set scrolloff=1
@@ -134,6 +151,8 @@ set splitbelow                 " Split horizontal windows below to the current w
 " 7 multiple tab pages
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 8 terminal
+"
+set term=xterm-256color
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 9 using the mouse
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -218,10 +237,12 @@ let g:netrw_dirhistmax = 0
 " else
 "colorscheme darkZ
 "colorscheme wombat256
-colorscheme molokai
+" colorscheme molokai
+colorscheme solarized
 filetype plugin indent on
 syntax on
 let mapleader = ","
+set bg=dark
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -323,6 +344,9 @@ nnoremap <space> :
 " highlight last inserted text
 nnoremap gV `[v`]
 
+" change tab with 2 spaces
+nnoremap <leader>T :%s/<tab>/\ \ <CR>
+
 " I have a ,v mapping to reselect the text that was just pasted so I can
 " perform commands (like indentation) on it:
 nnoremap <leader>v V`]
@@ -332,6 +356,7 @@ nnoremap <leader>v V`]
 
 " This last mapping lets me quickly open up my ~/.vimrc file in a new tab
 nnoremap <leader>ev :tabnew $MYVIMRC<cr>
+nnoremap <leader>es :tabnew ~/.vim/plugged/vim-snippets/snippets/ruby.snippets<cr>
 
 " <c-^> switch to alternative buffer
 nnoremap <leader><leader> <c-^>
@@ -495,6 +520,9 @@ let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
 let g:syntastic_enable_signs = 1
+" eslint for react
+"
+let g:syntastic_javascript_checkers = ['eslint']
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-reek
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -674,12 +702,57 @@ function! OpenInTabTestAlternate()
 endfunction
 
 function! AlternateForCurrentFile()
+  if g:framework == 'hanami'
+    return HanamiAlternateForCurrentFile()
+  else
+    return RailsAlternateForCurrentFile()
+  end
+endfunction
+
+function! HanamiAlternateForCurrentFile()
   let current_file = expand("%")
   let current_file = substitute(current_file, getcwd() . '/', '' , '')
   let new_file = current_file
   let in_spec = match(current_file, '^spec/') != -1
   let going_to_spec = !in_spec
-  let in_app = match(current_file, '\<controllers\>') != -1 || match(current_file, '\<models\>') != -1 || match(current_file, '\<views\>') != -1 || match(current_file, '\<helpers\>') != -1 || match(current_file, '\<services\>') != -1 || match(current_file, '\<jobs\>') || match(current_file, '\<decorators\>') || match(current_file, '\<policies\>') != -1
+  let in_apps = match(current_file, '\<controllers\>') != -1 || match(current_file, '\<views\>') != -1
+  " let in_app_assets = match(current_file, '\<javascripts\>') != -1
+  if going_to_spec
+    " if in_app_assets
+    "   let new_file = substitute(new_file, '^app/assets/', '', '')
+    "   let new_file = substitute(new_file, '\.e\?coffee$', '_spec.coffee', '')
+    " else
+    "   if in_apps
+    "     let new_file = substitute(new_file, '^apps/', '', '')
+    "   end
+    " end
+    let new_file = substitute(new_file, '^\.\?\/\?\(apps\|lib\)/', '', '')
+    let new_file = substitute(new_file, '\.e\?rb$', '_spec.rb', '')
+    let new_file = 'spec/' . new_file
+  else
+    let new_file = substitute(new_file, '_spec\.rb$', '.rb', '')
+    let new_file = substitute(new_file, '^spec/', '', '')
+    " if in_app_assets
+    "   let new_file = 'app/assets/' . new_file
+    "   let new_file = substitute(new_file, '_spec\.coffee$', '.coffee', '')
+    " else
+      if in_apps
+        let new_file = 'apps/' . new_file
+      else
+        let new_file = 'lib/' . new_file
+      end
+    " end
+  endif
+  return new_file
+endfunction
+
+function! RailsAlternateForCurrentFile()
+  let current_file = expand("%")
+  let current_file = substitute(current_file, getcwd() . '/', '' , '')
+  let new_file = current_file
+  let in_spec = match(current_file, '^spec/') != -1
+  let going_to_spec = !in_spec
+  let in_app = match(current_file, '\<controllers\>') != -1 || match(current_file, '\<models\>') != -1 || match(current_file, '\<views\>') != -1 || match(current_file, '\<helpers\>') != -1 || match(current_file, '\<services\>') != -1 || match(current_file, '\<jobs\>') || match(current_file, '\<decorators\>') || match(current_file, '\<policies\>') != -1 || match(current_file, '\<interactions\>') != -1
   let in_app_assets = match(current_file, '\<javascripts\>') != -1
   if going_to_spec
     if in_app_assets
@@ -707,8 +780,25 @@ function! AlternateForCurrentFile()
   return new_file
 endfunction
 
+" let g:framework = 'hanami'
+let g:framework = 'rails'
 " nnoremap <leader>. :call OpenTestAlternate()<cr>
 nnoremap <leader>. :call OpenInTabTestAlternate()<cr>
+
+function! ToggleFramework()
+  if g:framework == 'rails'
+    let g:framework = 'hanami'
+    let g:test_gem = ' m '
+    let g:spring = ''
+  else
+    let g:framework = 'rails'
+    let g:test_gem = ' rspec '
+    let g:spring = 'spring'
+  end
+  call MapSelecta()
+endfunction
+
+command! TF :call ToggleFramework()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " RUNNING TESTS
@@ -723,6 +813,7 @@ nnoremap <leader>u :call RunNearestTest()<cr>
 "nnoremap <leader>m :call TestModified()<cr>
 "nnoremap <leader>c :w\|:!script/features<cr>
 "nnoremap <leader>w :w\|:!script/features --profile wip<cr>
+let g:jstest = 'jasmine'
 
 function! RunNearestTest()
     let spec_line_number = line('.')
@@ -759,8 +850,8 @@ function! RunTests(filename)
     end
     :silent !clear
     if match(a:filename, '\.coffee') != -1
-        exec ":silent !echo 'time " . g:spring . " teaspoon '" . a:filename
-        exec ":!time " . g:spring . " teaspoon " . a:filename
+        exec ":silent !echo 'time " . g:spring . g:jstest . " '" . a:filename
+        exec ":!time " . g:spring . g:jstest . a:filename
     elseif match(a:filename, '\.feature') != -1
         exec ":silent !echo 'time " . g:spring . " cucumber '" .  a:filename
         exec ":!time " . g:spring . " cucumber " . a:filename
@@ -768,8 +859,8 @@ function! RunTests(filename)
         exec ":silent !echo 'time TESTOPTS=-p time " . g:spring . " rake test '" .  a:filename
         exec ":!time TESTOPTS=-p " . g:spring . " rake test " . a:filename
     else
-        exec ":silent !echo 'time " . g:spring . " rspec '" .  a:filename
-        exec ":!time " . g:spring . " rspec " . a:filename
+        exec ":silent !echo 'time " . g:spring . g:test_gem . "'" .  a:filename
+        exec ":!COV=no " . g:spring . g:test_gem . a:filename
     end
 endfunction
 
@@ -790,10 +881,18 @@ function! TestModified()
   call RunTests(s)
 endfunction
 
-let g:spring = 'spring'
+if g:framework == 'hanami'
+  let g:test_gem = ' m '
+  let g:spring = ''
+else
+  let g:test_gem = ' rspec '
+  let g:spring = ' spring '
+end
 " let g:spring = 'zeus'
 command! Spring :let g:spring = 'spring'
 command! UnSpring :let g:spring = ''
+command! Tea :let g:jstest = ' teaspoon '
+command! Notea :let g:jstest = ' jasmine '
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " selecta https://github.com/garybernhardt/selecta
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -801,7 +900,7 @@ command! UnSpring :let g:spring = ''
 " command. See usage below.
 function! SelectaCommand(choice_command, selecta_args, vim_command)
   try
-    silent let selection = system(a:choice_command . " | selecta " . a:selecta_args)
+    let selection = system(a:choice_command . " | selecta " . a:selecta_args)
   catch /Vim:Interrupt/
     " Swallow the ^C so that the redraw below happens; otherwise there will be
     " leftovers from selecta on the screen
@@ -812,27 +911,48 @@ function! SelectaCommand(choice_command, selecta_args, vim_command)
   exec a:vim_command . " " . selection
 endfunction
 
-function! SelectaFile(path, search)
-  " call SelectaCommand("find " . a:path . " -type f -not -path '*/\.*'", a:search, ":e")
-  call SelectaCommand("git ls-files -c -o --exclude-standard " . a:path, a:search, ":e")
+function! SelectaFile(path, search, ...)
+  if (a:0 && a:1 == 'find') || !filereadable(".git/HEAD")
+    call SelectaCommand("find " . a:path . " -type f -not -path '*/\.*'", a:search, ":e")
+  else
+    call SelectaCommand("git ls-files -c -o --exclude-standard " . a:path, a:search, ":e")
+  endif
 endfunction
 
 " Find all files in all non-dot directories starting in the working directory.
 " Fuzzy select one of those. Open the selected file with :e.
-nnoremap <leader>tt :call SelectaFile(".", "")<cr>
-nnoremap <leader>tv :call SelectaFile("app/views", "-s //")<cr>
-nnoremap <leader>tc :call SelectaFile("app/controllers", "-s //")<cr>
-nnoremap <leader>tm :call SelectaFile("app/models", "-s //")<cr>
-nnoremap <leader>th :call SelectaFile("app/helpers", "-s //")<cr>
-nnoremap <leader>tl :call SelectaFile("lib", "-s /")<cr>
-nnoremap <leader>to :call SelectaFile("config", "-s /")<cr>
-nnoremap <leader>tp :call SelectaFile("app/policies", "-s //")<cr>
-nnoremap <leader>ts :call SelectaFile("spec", "-s /")<cr>
-nnoremap <leader>tf :call SelectaFile("features", "-s /")<cr>
-nnoremap <leader>ta :call SelectaFile("app/assets", "-s //")<cr>
-nnoremap <leader>td :call SelectaFile("app/decorators", "-s //")<cr>
-nnoremap <leader>tr :call SelectaFile("app/services", "-s //")<cr>
-nnoremap <leader>tj :call SelectaFile("app/jobs", "-s //")<cr>
+function! MapSelecta()
+  nnoremap <leader>tt :call SelectaFile(".", "", 'find')<cr>
+  if g:framework == 'hanami'
+    nnoremap <leader>tv :call SelectaFile("apps/*/templates", "-s //")<cr>
+    nnoremap <leader>tw :call SelectaFile("apps/*/views", "-s //")<cr>
+    nnoremap <leader>tc :call SelectaFile("apps/*/controllers", "-s //")<cr>
+    nnoremap <leader>tm :call SelectaFile("lib/*/models", "-s //")<cr>
+    " nnoremap <leader>tp :call SelectaFile("apps/*/policies", "-s //")<cr>
+    nnoremap <leader>ta :call SelectaFile("apps/*/assets", "-s //")<cr>
+    " nnoremap <leader>td :call SelectaFile("apps/*/decorators", "-s //")<cr>
+    " nnoremap <leader>tr :call SelectaFile("apps/*/services", "-s //")<cr>
+    " nnoremap <leader>tj :call SelectaFile("apps/*/jobs", "-s //")<cr>
+    nnoremap <leader>to :call SelectaFile("**/config", "-s /")<cr>
+  else
+    nnoremap <leader>tv :call SelectaFile("app/views", "-s //")<cr>
+    nnoremap <leader>tc :call SelectaFile("app/controllers", "-s //")<cr>
+    nnoremap <leader>tm :call SelectaFile("app/models", "-s //")<cr>
+    nnoremap <leader>th :call SelectaFile("app/helpers", "-s //")<cr>
+    nnoremap <leader>tp :call SelectaFile("app/policies", "-s //")<cr>
+    nnoremap <leader>ta :call SelectaFile("app/assets", "-s //")<cr>
+    nnoremap <leader>td :call SelectaFile("app/decorators", "-s //")<cr>
+    nnoremap <leader>tr :call SelectaFile("app/services", "-s //")<cr>
+    nnoremap <leader>tj :call SelectaFile("app/jobs", "-s //")<cr>
+    nnoremap <leader>ti :call SelectaFile("app/interactions", "-s //")<cr>
+    nnoremap <leader>to :call SelectaFile("config", "-s /")<cr>
+  endif
+  nnoremap <leader>tl :call SelectaFile("lib", "-s /")<cr>
+  nnoremap <leader>ts :call SelectaFile("spec", "-s /")<cr>
+  nnoremap <leader>tf :call SelectaFile("features", "-s /")<cr>
+endfunction
+
+call MapSelecta()
 
 "When you put your cursor anywhere in the word "User" and press <leader>g, This
 "mapping will open Selecta with the search box pre-populated with "User". It's
