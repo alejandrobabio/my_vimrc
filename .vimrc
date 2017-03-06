@@ -79,7 +79,11 @@ Plug 'wakatime/vim-wakatime'
 Plug 'leafgarland/typescript-vim'
 
 " gist
+Plug 'mattn/webapi-vim'
 Plug 'mattn/gist-vim'
+
+" markdown plugin
+Plug 'junegunn/goyo.vim'
 call plug#end()
 
 runtime macros/matchit.vim
@@ -387,6 +391,7 @@ map <leader>i mmgg=G`m<cr>
 " NERDTree setting
 nnoremap <leader>n :NERDTreeToggle<cr>
 let g:NERDTreeShowHidden=1
+let NERDTreeIgnore=['\~$', '^\..*\.sw.$[[file]]']
 
 " jump to css class or id (usually) with <leader>]
 nnoremap <leader>] :tag /<c-r>=expand('<cword>')<cr><cr>
@@ -529,6 +534,7 @@ let g:syntastic_javascript_checkers = ['eslint']
 let g:reek_always_show = 0
 let g:reek_on_loading = 0
 function! Ree()
+  :w
   :RunReek
   " Shortcuts taken from Ack.vim - git://github.com/mileszs/ack.vim.git
   exec "nnoremap <silent> <buffer> q :ccl<CR>"
@@ -558,7 +564,7 @@ endfunction
 " map <leader>Sm :call Sm()<cr>
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-rubocop
-nmap <Leader>rb :RuboCop<CR>
+nmap <Leader>rb :w\|:RuboCop<CR>
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-airline
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -913,7 +919,7 @@ endfunction
 
 function! SelectaFile(path, search, ...)
   if (a:0 && a:1 == 'find') || !filereadable(".git/HEAD")
-    call SelectaCommand("find " . a:path . " -type f -not -path '*/\.*'", a:search, ":e")
+    call SelectaCommand("find " . a:path . " -type f -not -path '*/\.*\.sw.'", a:search, ":e")
   else
     call SelectaCommand("git ls-files -c -o --exclude-standard " . a:path, a:search, ":e")
   endif

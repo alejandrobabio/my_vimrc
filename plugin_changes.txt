@@ -1,3 +1,41 @@
+ag.vim
+auto_mkdir
+auto-pairs
+gist-vim
+goyo.vim
+greplace.vim
+gundo.vim
+nerdtree
+syntastic
+tagbar
+typescript-vim
+ultisnips
+vim-airline
+vim-coffee-script
+vim-colorschemes
+vim-commentary
+vim-easy-align
+vim-fugitive
+vim-indent-object
+vim-jsx
+vim-markdown
+diff --git a/syntax/markdown.vim b/syntax/markdown.vim
+index 49dbe3a..d6aa7a9 100644
+--- a/syntax/markdown.vim
++++ b/syntax/markdown.vim
+@@ -77,7 +77,8 @@ syn region markdownAutomaticLink matchgroup=markdownUrlDelimiter start="<\%(\w\+
+ 
+ let s:concealends = has('conceal') ? ' concealends' : ''
+ exe 'syn region markdownItalic matchgroup=markdownItalicDelimiter start="\S\@<=\*\|\*\S\@=" end="\S\@<=\*\|\*\S\@=" keepend contains=markdownLineStart' . s:concealends
+-exe 'syn region markdownItalic matchgroup=markdownItalicDelimiter start="\S\@<=_\|_\S\@=" end="\S\@<=_\|_\S\@=" keepend contains=markdownLineStart' . s:concealends
++" allow use _ without highligting as italic.
++" exe 'syn region markdownItalic matchgroup=markdownItalicDelimiter start="\S\@<=_\|_\S\@=" end="\S\@<=_\|_\S\@=" keepend contains=markdownLineStart' . s:concealends
+ exe 'syn region markdownBold matchgroup=markdownBoldDelimiter start="\S\@<=\*\*\|\*\*\S\@=" end="\S\@<=\*\*\|\*\*\S\@=" keepend contains=markdownLineStart,markdownItalic' . s:concealends
+ exe 'syn region markdownBold matchgroup=markdownBoldDelimiter start="\S\@<=__\|__\S\@=" end="\S\@<=__\|__\S\@=" keepend contains=markdownLineStart,markdownItalic' . s:concealends
+ exe 'syn region markdownBoldItalic matchgroup=markdownBoldItalicDelimiter start="\S\@<=\*\*\*\|\*\*\*\S\@=" end="\S\@<=\*\*\*\|\*\*\*\S\@=" keepend contains=markdownLineStart' . s:concealends
+vim-multiple-cursors
+vim-rails
+vim-reek
 diff --git a/plugin/reek.vim b/plugin/reek.vim
 index 23b192a..edecb5d 100644
 --- a/plugin/reek.vim
@@ -5,7 +43,7 @@ index 23b192a..edecb5d 100644
 @@ -40,7 +40,8 @@ function! s:Reek()
      end
    endfor
-
+ 
 -  call setloclist(0, loclist)
 +  call setqflist(loclist)
 +  " call setloclist(0, loclist)
@@ -20,8 +58,12 @@ index 23b192a..edecb5d 100644
 +  " lopen
 +  copen
  endfunction
-
+ 
  " Only set up automatic call if we request reek_on_loading
+vim-rubocop
+vim-ruby
+vim-slim
+vim-snippets
 diff --git a/snippets/ruby.snippets b/snippets/ruby.snippets
 index 6b9d85d..68e2345 100644
 --- a/snippets/ruby.snippets
@@ -270,3 +312,9 @@ index 6b9d85d..68e2345 100644
  	reduce(${1:init}) do |${2:mem}, ${3:var}|
  		${0}
  	end
+vim-surround
+vim-textobj-rubyblock
+vim-textobj-user
+vim-wakatime
+webapi-vim
+YouCompleteMe

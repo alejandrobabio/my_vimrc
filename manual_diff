@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+# run with ./manual_diff to update 'plugin_changes.txt'
+
+update = %x( cd .vim/plugged; for dir in `ls`; do echo $dir; cd $dir; git diff; cd ..;done;cd ../.. )
+
+File.new('plugin_changes.txt', 'w').write(update)
