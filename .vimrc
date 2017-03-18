@@ -18,6 +18,7 @@ Plug 'tpope/vim-surround'
 " git
 Plug 'tpope/vim-fugitive'
 "Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-bundler'
 
 " undo
 Plug 'sjl/gundo.vim'
@@ -104,16 +105,16 @@ set smartcase
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 3 tags
 " vim-bundler don't do the job
-" set tags=.git/tags <-- this is done for vim-fugitive
-" function! SetGemsTags()
-"   if filereadable('./Gemfile')
-"     let tag_paths=system("bundle show --paths")
-"     let tag_paths=substitute(tag_paths, "\\n", "/tags,", "g")
-"     return tag_paths
-"   end
-"   return ''
-" endfunction
-" let &tags=SetGemsTags()
+set tags=.git/tags " <-- this is done for vim-fugitive
+function! SetGemsTags()
+  if filereadable('./Gemfile')
+    let tag_paths=system("bundle show --paths")
+    let tag_paths=substitute(tag_paths, "\\n", "/tags,", "g")
+    return tag_paths
+  end
+  return ''
+endfunction
+let &tags=SetGemsTags()
 
 " generate local tags on write buffer
 " http://tbaggery.com/2011/08/08/effortless-ctags-with-git.html
@@ -124,7 +125,8 @@ set smartcase
 "   \ endif
 
 " create tags file in current working directory
-command! MakeTags :silent !ctags -R *
+" command! MakeTags :silent !ctags -R *
+command! MakeTags :silent !ctags --tag-relative -R -f .git/tags --languages=-javascript,sql *
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 4 displaying text
@@ -248,6 +250,9 @@ syntax on
 let mapleader = ","
 set bg=dark
 
+augroup filetypedetect
+  autocmd BufRead,BufNewFile *.decorator set filetype=ruby
+augroup END
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " mappings
