@@ -126,9 +126,14 @@ let &tags=SetGemsTags()
 
 " create tags file in current working directory
 " command! MakeTags :silent !ctags -R *
-command! MakeTags :silent !ctags --tag-relative -R -f .git/tags --languages=-javascript,sql *
+" command! MakeTags :!ctags --tag-relative -R -f .git/tags --languages=-javascript,sql *
+command! MakeTags :silent !ctags -R --tag-relative -f .git/tags --languages=-javascript,sql --exclude=.git --exclude=log . $(bundle list --paths)
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" map <C-[> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
+map \ :exec("tag ".expand("<cword>"))<CR>
+map <C-\> :sp <CR>:exec("tag ".expand("<cword>"))<CR>
+map <leader>\ :vs <CR>:exec("tag ".expand("<cword>"))<CR>
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 4 displaying text
 "set scrolloff=1
 set nowrap
@@ -334,7 +339,7 @@ let g:AutoPairs =  {'(':')', '[':']', '{':'}',"'":"'",'"':'"', '`':'`', '|':'|',
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-ruby
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:ruby_indent_access_modifier_style = 'outdent'
+" let g:ruby_indent_access_modifier_style = 'outdent'
 
 " greplace
 let g:grep_cmd_opts = '--line-numbers --noheading'
@@ -374,10 +379,10 @@ noremap <c-t> <esc>:tabnew<cr>
 noremap <leader>t <c-t>
 
 " copy to clipboard
-"map <leader>cy "*y
+map <leader>cy "+y
 " paste from clipboard
-map <leader>cp "*p
-map <leader>cP "*P
+map <leader>cp "+p
+map <leader>cP "+P
 
 nmap <tab> %
 vmap <tab> %
@@ -440,6 +445,9 @@ nmap Q gqap
 " TagbarToggle
 nnoremap tb :TagbarToggle<cr>
 
+let g:tagbar_sort = 0
+let g:tagbar_compact = 1
+let g:tagbar_show_visibility = 1
 
 " use tagbar with css
 let g:tagbar_type_css = {
@@ -522,6 +530,9 @@ augroup MyAutoCmd
 augroup END
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" git commit format
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+autocmd Filetype gitcommit setlocal spell textwidth=72
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " syntastic setup
 " from: https://github.com/Casecommons/vim-config/blob/master/init/syntastic.vim
@@ -900,6 +911,7 @@ else
   let g:spring = ' spring '
 end
 " let g:spring = 'zeus'
+let g:spring = ''
 command! Spring :let g:spring = 'spring'
 command! UnSpring :let g:spring = ''
 command! Tea :let g:jstest = ' teaspoon '
