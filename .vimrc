@@ -30,12 +30,16 @@ Plug 'sjl/gundo.vim'
 " autocomplete and ide
 "Plug 'Raimondi/delimitMate'
 Plug 'Valloric/YouCompleteMe', { 'do': './install.sh' }
+" Plug 'Shougo/deoplete.nvim'
+" Plug 'roxma/nvim-yarp'
+" Plug 'roxma/vim-hug-neovim-rpc'
 Plug 'tpope/vim-commentary'
 " Plug 'tomtom/tcomment_vim'
 Plug 'terryma/vim-multiple-cursors'
 
 " syntax
-Plug 'scrooloose/syntastic'
+" Plug 'scrooloose/syntastic'
+Plug 'vim-syntastic/syntastic'
 Plug 'tpope/vim-markdown'
 " search
 "Plug 'ctrlpvim/ctrlp.vim', { 'on': ['CtrlP', 'CtrlPTag'] }
@@ -85,6 +89,15 @@ Plug 'mattn/gist-vim'
 
 " markdown plugin
 Plug 'junegunn/goyo.vim'
+
+" tags
+Plug 'AndrewRadev/tagfinder.vim'
+
+" Elixir
+Plug 'elixir-editors/vim-elixir'
+Plug 'slashmili/alchemist.vim'
+" Plug 'mmorearty/elixir-ctags' " not needed ~/.ctags updated
+
 call plug#end()
 
 runtime macros/matchit.vim
@@ -106,15 +119,15 @@ set smartcase
 " 3 tags
 " vim-bundler don't do the job
 set tags=.git/tags " <-- this is done for vim-fugitive
-function! SetGemsTags()
-  if filereadable('./Gemfile')
-    let tag_paths=system("bundle show --paths")
-    let tag_paths=substitute(tag_paths, "\\n", "/tags,", "g")
-    return tag_paths
-  end
-  return ''
-endfunction
-let &tags=SetGemsTags()
+" function! SetGemsTags()
+"   if filereadable('./Gemfile')
+"     let tag_paths=system("bundle show --paths")
+"     let tag_paths=substitute(tag_paths, "\\n", "/tags,", "g")
+"     return tag_paths
+"   end
+"   return ''
+" endfunction
+" let &tags=SetGemsTags()
 
 " generate local tags on write buffer
 " http://tbaggery.com/2011/08/08/effortless-ctags-with-git.html
@@ -127,7 +140,7 @@ let &tags=SetGemsTags()
 " create tags file in current working directory
 " command! MakeTags :silent !ctags -R *
 " command! MakeTags :!ctags --tag-relative -R -f .git/tags --languages=-javascript,sql *
-command! MakeTags :silent !ctags -R --tag-relative -f .git/tags --languages=-javascript,sql --exclude=.git --exclude=log . $(bundle list --paths)
+command! MakeTags :silent !ctags -R --tag-relative -f .git/tags --languages=-javascript,sql --exclude=.git --exclude=log --fields=+l . $(bundle list --paths)
 
 " map <C-[> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
 map \ :exec("tag ".expand("<cword>"))<CR>
@@ -146,6 +159,7 @@ set lazyredraw                 " no redraw on macros execution
 set hlsearch
 " cursor en doble línea
 set cursorline
+set cursorcolumn
 " mark 72, 80 and 120 characters
 set colorcolumn=72,80,120
 
@@ -249,6 +263,7 @@ let g:netrw_dirhistmax = 0
 "colorscheme darkZ
 "colorscheme wombat256
 " colorscheme molokai
+" colorscheme desertEx
 colorscheme solarized
 filetype plugin indent on
 syntax on
@@ -284,6 +299,9 @@ let g:ycm_autoclose_preview_window_after_completion = 1
 let g:ycm_min_num_of_chars_for_completion = 1
 let g:ycm_key_list_select_completion=[]
 let g:ycm_key_list_previous_completion=[]
+let g:ycm_collect_identifiers_from_tags_files = 1
+" deoplete
+let g:deoplete#enable_at_startup = 1
 
 :command! -bang -nargs=1 -range SubstituteUnlesString
     \ <line1>,<line2>call s:SubstituteUnlessString("<bang>", <f-args>)
@@ -330,7 +348,7 @@ endfunction
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " autopairs
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:AutoPairs =  {'(':')', '[':']', '{':'}',"'":"'",'"':'"', '`':'`', '|':'|', '/':'/'}
+let g:AutoPairs =  {'(':')', '[':']', '{':'}',"'":"'",'"':'"', '`':'`',  '/':'/'}
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " matchit
@@ -375,8 +393,9 @@ nnoremap <leader>es :tabnew ~/.vim/plugged/vim-snippets/snippets/ruby.snippets<c
 " <c-^> switch to alternative buffer
 nnoremap <leader><leader> <c-^>
 
-noremap <c-t> <esc>:tabnew<cr>
-noremap <leader>t <c-t>
+" noremap <c-t> <esc>:tabnew<cr>
+" noremap <leader>t <c-t>
+noremap <leader>t <esc>:tabnew<cr>
 
 " copy to clipboard
 map <leader>cy "+y
@@ -402,6 +421,29 @@ map <leader>i mmgg=G`m<cr>
 nnoremap <leader>n :NERDTreeToggle<cr>
 let g:NERDTreeShowHidden=1
 let NERDTreeIgnore=['\~$', '^\..*\.sw.$[[file]]']
+
+" try sync tabs <--
+" automatic NERDTree mirroring on tab switching
+" when having just one window in the tab
+" function! MirrorNerdTreeIfOneWindow()
+"   if winnr("$") < 2
+"     NERDTreeMirror
+
+"     <C-w>l
+"     " hack to move the focus from the NERDTree to the main window
+"     " wincmd p
+"     " wincmd l
+"     " if line("'\"") > 0 && line("'\"") <= line("$") |
+"     "   exec "normal g`\"" |
+"     " endif
+
+"   endif
+" endfunction
+
+" autocmd GuiEnter * silent NERDTree
+" autocmd VimEnter * silent NERDTreeToggle
+" autocmd TabEnter * silent exe MirrorNerdTreeIfOneWindow()
+" end try sync tabs -->
 
 " jump to css class or id (usually) with <leader>]
 nnoremap <leader>] :tag /<c-r>=expand('<cword>')<cr><cr>
@@ -450,6 +492,21 @@ let g:tagbar_compact = 1
 let g:tagbar_show_visibility = 1
 
 " use tagbar with css
+" if executable('ripper-tags')
+  let g:tagbar_type_ruby = {
+      \ 'kinds'      : ['m:modules',
+                      \ 'c:classes',
+                      \ 'C:constants',
+                      \ 'F:singleton methods',
+                      \ 'f:methods',
+                      \ 'a:aliases'],
+      \ 'kind2scope' : { 'c' : 'class',
+                       \ 'm' : 'class' },
+      \ 'scope2kind' : { 'class' : 'c' },
+      \ }
+      " \ 'ctagsbin'   : 'ripper-tags',
+      " \ 'ctagsargs'  : ['-f', '-']
+" endif
 let g:tagbar_type_css = {
 \ 'ctagstype' : 'Css',
 \ 'kinds'     : [
@@ -486,7 +543,11 @@ let g:browser = 'google-chrome-beta -new-tab '
 " replace ':bar =>' with 'bar:'
 nnoremap <leader>rh :%s/:\([^=,'"]*\) =>/\1:/c
 " replace 'bar:' with ':bar =>'
-nnoremap <leader>hr :%s/\(\w*\): \([':]\)/:\1 => \2/c
+nnoremap <leader>hr :%s/\(\w*\): \([':{\[]\)/:\1 => \2/c
+" replace :bar with 'bar' (symbol to string)
+nnoremap <leader>ys :%s/:\(\w\+\)/'\1'/c
+" replace 'bar' with :bar (string to symbol)
+nnoremap <leader>gy :%s/'\(\w\+\)'/:\1/c
 
 " switch tabs
 noremap <PageUp> :tabprev<cr>
@@ -581,6 +642,10 @@ endfunction
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-rubocop
 nmap <Leader>rb :w\|:RuboCop<CR>
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vim-gist
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:gist_get_multiplefile = 1
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim-airline
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -726,6 +791,8 @@ endfunction
 function! AlternateForCurrentFile()
   if g:framework == 'hanami'
     return HanamiAlternateForCurrentFile()
+  elseif g:framework == 'dwr'
+    return DwrAlternateForCurrentFile()
   else
     return RailsAlternateForCurrentFile()
   end
@@ -768,6 +835,31 @@ function! HanamiAlternateForCurrentFile()
   return new_file
 endfunction
 
+function! DwrAlternateForCurrentFile()
+  " TODO Upgrade to dwr
+  let current_file = expand("%")
+  let current_file = substitute(current_file, getcwd() . '/', '' , '')
+  let new_file = current_file
+  let in_spec = match(current_file, '^spec/') != -1
+  let going_to_spec = !in_spec
+  let in_apps = match(current_file, '^apps/') != -1
+  let in_lib = match(current_file, '^lib/') != -1
+  if going_to_spec
+    let new_file = substitute(new_file, '^\.\?\/\?apps/', '', '')
+    let new_file = substitute(new_file, '\.e\?rb$', '_spec.rb', '')
+    let new_file = 'spec/' . new_file
+  else
+    let new_file = substitute(new_file, '_spec\.rb$', '.rb', '')
+    let new_file = substitute(new_file, '^spec/', '', '')
+    if in_lib
+      let new_file = 'lib/' . new_file
+    else
+      let new_file = 'apps/' . new_file
+    end
+  endif
+  return new_file
+endfunction
+
 function! RailsAlternateForCurrentFile()
   let current_file = expand("%")
   let current_file = substitute(current_file, getcwd() . '/', '' , '')
@@ -802,26 +894,40 @@ function! RailsAlternateForCurrentFile()
   return new_file
 endfunction
 
-" let g:framework = 'hanami'
 let g:framework = 'rails'
-" nnoremap <leader>. :call OpenTestAlternate()<cr>
 nnoremap <leader>. :call OpenInTabTestAlternate()<cr>
 
-function! ToggleFramework()
-  if g:framework == 'rails'
-    let g:framework = 'hanami'
+function! ToggleFramework(arg)
+  let g:framework = a:arg
+  if g:framework == 'hanami'
     let g:test_gem = ' m '
     let g:spring = ''
+  elseif g:framework == 'dwr'
+    let g:test_gem = ' rspec '
+    let g:spring = ''
   else
-    let g:framework = 'rails'
     let g:test_gem = ' rspec '
     let g:spring = 'spring'
   end
   call MapSelecta()
 endfunction
 
-command! TF :call ToggleFramework()
+command! -nargs=1 TF :call ToggleFramework(<f-args>)
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Set framework
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+if filereadable('Gemfile')
+  if match(readfile('Gemfile'), 'dry-web-roda') != -1
+    let g:framework = 'dwr'
+  elseif match(readfile('Gemfile'), 'hanami') != -1
+    let g:framework = 'hanami'
+  else
+    let g:framework = 'rails'
+  end
+else
+  let g:framework = 'rails'
+end
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " RUNNING TESTS
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -882,7 +988,7 @@ function! RunTests(filename)
         exec ":!time TESTOPTS=-p " . g:spring . " rake test " . a:filename
     else
         exec ":silent !echo 'time " . g:spring . g:test_gem . "'" .  a:filename
-        exec ":!COV=no " . g:spring . g:test_gem . a:filename
+        exec ":!COV=no bundle exec " . g:spring . g:test_gem . a:filename
     end
 endfunction
 
@@ -906,11 +1012,13 @@ endfunction
 if g:framework == 'hanami'
   let g:test_gem = ' m '
   let g:spring = ''
+elseif g:framework == 'dwr'
+  let g:test_gem = ' rspec '
+  let g:spring = ''
 else
   let g:test_gem = ' rspec '
   let g:spring = ' spring '
 end
-" let g:spring = 'zeus'
 let g:spring = ''
 command! Spring :let g:spring = 'spring'
 command! UnSpring :let g:spring = ''
@@ -947,7 +1055,7 @@ endfunction
 function! MapSelecta()
   nnoremap <leader>tt :call SelectaFile(".", "", 'find')<cr>
   if g:framework == 'hanami'
-    nnoremap <leader>tv :call SelectaFile("apps/*/templates", "-s //")<cr>
+    nnoremap <leader>tv :call SelectaFile("apps/**/templates", "-s //")<cr>
     nnoremap <leader>tw :call SelectaFile("apps/*/views", "-s //")<cr>
     nnoremap <leader>tc :call SelectaFile("apps/*/controllers", "-s //")<cr>
     nnoremap <leader>tm :call SelectaFile("lib/*/models", "-s //")<cr>
@@ -957,6 +1065,18 @@ function! MapSelecta()
     " nnoremap <leader>tr :call SelectaFile("apps/*/services", "-s //")<cr>
     " nnoremap <leader>tj :call SelectaFile("apps/*/jobs", "-s //")<cr>
     nnoremap <leader>to :call SelectaFile("**/config", "-s /")<cr>
+  elseif g:framework == 'dwr'
+    nnoremap <leader>tv :call SelectaFile("apps/*/web/templates", "-s //")<cr>
+    nnoremap <leader>tr :call SelectaFile("apps/*/web/routes", "-s //")<cr>
+    nnoremap <leader>tw :call SelectaFile("apps/*/lib/**/views", "-s //")<cr>
+    nnoremap <leader>to :call SelectaFile("apps/*/lib/**/operations", "-s //")<cr>
+    nnoremap <leader>ti :call SelectaFile("apps/*/lib", "-s //")<cr>
+    nnoremap <leader>tp :call SelectaFile("lib/persistence", "-s //")<cr>
+    nnoremap <leader>ta :call SelectaFile("apps/*/assets", "-s //")<cr>
+    nnoremap <leader>ty :call SelectaFile("apps/*/system", "-s //")<cr>
+    " nnoremap <leader>td :call SelectaFile("apps/*/decorators", "-s //")<cr>
+    " nnoremap <leader>tc :call SelectaFile("apps/*/services", "-s //")<cr>
+    " nnoremap <leader>tj :call SelectaFile("apps/*/jobs", "-s //")<cr>
   else
     nnoremap <leader>tv :call SelectaFile("app/views", "-s //")<cr>
     nnoremap <leader>tc :call SelectaFile("app/controllers", "-s //")<cr>
@@ -1054,3 +1174,4 @@ command! Nowrap :call Nowrap()
 " use :AG .css example
 command! -nargs=* GS :Gsearch -G <args>
 command! -nargs=* AG :Ag -G <args>
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
